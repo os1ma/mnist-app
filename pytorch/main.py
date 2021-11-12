@@ -1,5 +1,6 @@
 # https://pytorch-lightning.readthedocs.io/en/latest/notebooks/lightning_examples/mnist-hello-world.html
 
+import multiprocessing
 import os
 
 import torch
@@ -27,6 +28,11 @@ class MNISTModel(LightningModule):
         loss = F.cross_entropy(self(x), y)
         return loss
 
+    def test_step(self, batch, batch_nb):
+        x, y = batch
+        loss = F.cross_entropy(self(x), y)
+        self.log("test_loss", loss)
+
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=0.02)
 
@@ -35,14 +41,18 @@ mnist_model = MNISTModel()
 
 # Init DataLoader from MNIST Dataset
 train_ds = MNIST(PATH_DATASETS, train=True, download=True, transform=transforms.ToTensor())
-train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE)
+train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, num_workers=multiprocessing.cpu_count())
+
+test_ds = MNIST(PATH_DATASETS, train=False, download=True, transform=transforms.ToTensor())
+test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, num_workers=multiprocessing.cpu_count())
 
 # Initialize a trainer
 trainer = Trainer(
     gpus=AVAIL_GPUS,
     max_epochs=3,
-    progress_bar_refresh_rate=20,
 )
 
 # Train the model ⚡
 trainer.fit(mnist_model, train_loader)
+
+trainer.test(dataloaders=test_loader)
