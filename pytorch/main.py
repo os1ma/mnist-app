@@ -59,6 +59,6 @@ trainer.fit(mnist_model, train_loader)
 trainer.test(dataloaders=test_loader)
 
 # https://pytorch-lightning.readthedocs.io/en/latest/common/production_inference.html
-filepath = "model.onnx"
+filepath = "../fastapi/model.onnx"
 input_sample = torch.randn((1, 28, 28))
 mnist_model.to_onnx(filepath, input_sample, export_params=True)

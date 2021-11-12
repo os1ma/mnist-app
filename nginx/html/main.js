@@ -1,5 +1,5 @@
-function escapeHTML(str) {
-  return str
+function escapeHTML(obj) {
+  return JSON.stringify(obj)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
