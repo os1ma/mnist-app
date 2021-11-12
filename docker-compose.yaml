@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  frontend:
+    image: nginx:1.21.1-alpine
+    ports:
+      - 8000:80
+    volumes:
+      - ${PWD}/nginx/html:/usr/share/nginx/html
+      - ${PWD}/nginx/conf.d:/etc/nginx/conf.d
+    # depends_on:
+    #   - api
+  # api:
+  #   build: ./fastapi/
+  #   command: /start-reload.sh
+  #   environment:
+  #     PORT: 8000
+  #   volumes:
+  #     - ${PWD}/fastapi:/app
