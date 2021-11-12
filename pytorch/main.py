@@ -28,6 +28,7 @@ class MNISTModel(LightningModule):
         loss = F.cross_entropy(self(x), y)
         return loss
 
+    # https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html
     def test_step(self, batch, batch_nb):
         x, y = batch
         loss = F.cross_entropy(self(x), y)
@@ -56,3 +57,8 @@ trainer = Trainer(
 trainer.fit(mnist_model, train_loader)
 
 trainer.test(dataloaders=test_loader)
+
+# https://pytorch-lightning.readthedocs.io/en/latest/common/production_inference.html
+filepath = "model.onnx"
+input_sample = torch.randn((1, 28, 28))
+mnist_model.to_onnx(filepath, input_sample, export_params=True)
