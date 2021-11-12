@@ -8,12 +8,12 @@ services:
     volumes:
       - ${PWD}/nginx/html:/usr/share/nginx/html
       - ${PWD}/nginx/conf.d:/etc/nginx/conf.d
-    # depends_on:
-    #   - api
-  # api:
-  #   build: ./fastapi/
-  #   command: /start-reload.sh
-  #   environment:
-  #     PORT: 8000
-  #   volumes:
-  #     - ${PWD}/fastapi:/app
+    depends_on:
+      - api
+  api:
+    build: ./fastapi/
+    command: /start-reload.sh
+    environment:
+      PORT: 8000
+    volumes:
+      - ${PWD}/fastapi:/app

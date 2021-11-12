@@ -1,4 +1,8 @@
+# pytorch
 .venv/
 lightning_logs/
 MNIST/
 *.onnx
+
+# fastapi
+__pycache__/

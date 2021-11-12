@@ -11,7 +11,7 @@ async function predict() {
   const response = await axios.post('/api/predict')
   const result = response.data.result
 
-  const resultElement = document.querySelector('#result').value
+  const resultElement = document.querySelector('#result')
   resultElement.textContent = escapeHTML(result)
 }
 
