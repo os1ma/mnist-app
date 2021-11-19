@@ -53,7 +53,7 @@ test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, num_workers=multiproces
 
 trainer = Trainer(
     gpus=AVAIL_GPUS,
-    max_epochs=3,
+    max_epochs=10,
 )
 
 trainer.fit(mnist_model, train_loader)

@@ -1,5 +1,7 @@
-FROM python:3.8-slim-buster
+FROM nvidia/cuda:11.4.2-devel-ubuntu20.04
 
 COPY requirements.txt /tmp
 
-RUN pip install -r /tmp/requirements.txt
+RUN apt update \
+  && apt install -y python3 python3-pip \
+  && pip install -r /tmp/requirements.txt
