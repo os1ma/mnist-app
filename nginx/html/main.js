@@ -73,7 +73,7 @@ function draw(x, y) {
 
   context.lineCap = 'round'
   context.lineJoin = 'round'
-  context.lineWidth = 5
+  context.lineWidth = 10
   context.strokeStyle = 'black'
 
   if (lastPosition.x === null || lastPosition.y === null) {

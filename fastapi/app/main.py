@@ -1,9 +1,10 @@
-import os
 from datetime import datetime
+from io import BytesIO
 
 import numpy as np
 import onnxruntime
 from fastapi import FastAPI, File, UploadFile
+from PIL import Image
 
 MODEL_FILE = '/tmp/model.onnx'
 
@@ -22,19 +23,28 @@ async def predict(image: UploadFile = File(...)):
     log_info("predict called.")
 
     # preprocess image file
+
     filename = image.filename
     log_info(f"filename = {filename}")
+    data = await image.read()
+    pil_image = Image.open(BytesIO(data))
+    # 28 * 28 に変換
+    resized = pil_image.resize((28, 28))
+    arr = np.array(resized)
+    log_info(f"arr.shpae = {arr.shape}")
+    # 軸の変換
+    transposed = arr.transpose()[3:]
+    log_info(f"transposed.shape = {transposed.shape}, transposed = {transposed}, max = {np.amax(transposed)}")
+    # 型を変換
+    typed = transposed.astype('float32')
+    # -1 ~ 1 に正規化
+    standardized = typed * 2 / 255 - 1
+    log_info(f"standardized.shape = {standardized.shape}, standardized = {standardized}")
 
     # predict
     onnx_session = onnxruntime.InferenceSession(MODEL_FILE)
-
-    random_values = np.random.random_sample((1, 28, 28))
-    standardized = 2 * random_values - 1
-    input = standardized.astype('float32')
-    log_info(f"input.shape = {input.shape}, input[0][0][0] = {input[0][0][0]}")
-
     input_name = onnx_session.get_inputs()[0].name
-    output = onnx_session.run(None, {input_name: input})
+    output = onnx_session.run(None, {input_name: standardized})
     log_info(f"output = {output}")
 
     result = output[0][0].tolist()
