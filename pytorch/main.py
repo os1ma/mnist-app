@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torchmetrics
 from pytorch_lightning import LightningModule, Trainer
 from torch import nn
 from torch.nn import functional as F
@@ -26,6 +27,8 @@ class MNISTModel(LightningModule):
         self.relu = torch.nn.ReLU(inplace=True)
         self.l2 = torch.nn.Linear(n_hidden, n_output)
 
+        self.accuracy = torchmetrics.Accuracy()
+
     def forward(self, x):
         input = x.view(x.size(0), -1)
         x1 = self.l1(input)
@@ -36,8 +39,17 @@ class MNISTModel(LightningModule):
     def training_step(self, batch, batch_nb):
         x, y = batch
         loss = F.cross_entropy(self(x), y)
+
+        preds = self(x)
+        acc = self.accuracy(preds, y)
+
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_acc_step', acc)
+
         return loss
+
+    def training_epoch_end(self, outs):
+        self.log('train_acc_epoch', self.accuracy.compute())
 
     # https://pytorch-lightning.readthedocs.io/en/latest/starter/introduction_guide.html
     def test_step(self, batch, batch_nb):
@@ -61,7 +73,7 @@ mnist_model = MNISTModel(28 * 28, 128, 10)
 
 trainer = Trainer(
     gpus=AVAIL_GPUS,
-    max_epochs=3,
+    max_epochs=10,
 )
 
 trainer.fit(mnist_model)
