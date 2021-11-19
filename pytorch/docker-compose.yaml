@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  pytorch:
+    build: .
+    command: python main.py
+    volumes:
+      - ${PWD}:/opt/pytorch
+    working_dir: /opt/pytorch
