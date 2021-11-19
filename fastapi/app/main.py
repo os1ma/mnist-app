@@ -3,7 +3,7 @@ from datetime import datetime
 
 import onnxruntime
 import torch
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 
 MODEL_FILE = '/tmp/model.onnx'
 
@@ -18,8 +18,14 @@ async def health():
     return {'health': 'ok'}
 
 @app.post('/api/predict')
-async def predict():
+async def predict(image: UploadFile = File(...)):
     log_info("predict called.")
+
+    # preprocess image file
+    filename = image.filename
+    log_info(f"filename = {filename}")
+
+    # predict
     onnx_session = onnxruntime.InferenceSession(MODEL_FILE)
 
     input_name = onnx_session.get_inputs()[0].name

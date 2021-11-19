@@ -7,8 +7,28 @@ function escapeHTML(obj) {
     .replace(/'/g, '&#039;')
 }
 
+async function promiseCanvasToBlob(mimeType, qualityArgument) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (result) => {
+        resolve(result)
+      },
+      mimeType,
+      qualityArgument
+    )
+  })
+}
+
 async function predict() {
-  const response = await axios.post('/api/predict')
+  // post image
+  const headers = { 'content-type': 'multipart/form-data' }
+  const data = new FormData()
+  const image = await promiseCanvasToBlob('image/png')
+  data.append('image', image, 'number.png')
+  const response = await axios.post('/api/predict', data, headers)
+
+  // show result
+
   const result = response.data.result
   console.log(`result = ${result}`)
 
