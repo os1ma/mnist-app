@@ -37,8 +37,8 @@ async def predict(image: UploadFile = File(...)):
     log_info(f"transposed.shape = {transposed.shape}, transposed = {transposed}, max = {np.amax(transposed)}")
     # 型を変換
     typed = transposed.astype('float32')
-    # -1 ~ 1 に正規化
-    standardized = typed * 2 / 255 - 1
+    # 0 ~ 1 に正規化
+    standardized = typed / 255
     log_info(f"standardized.shape = {standardized.shape}, standardized = {standardized}")
 
     # predict
