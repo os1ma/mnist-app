@@ -5,3 +5,4 @@ MNIST/
 
 # fastapi
 __pycache__/
+/fastapi/data/

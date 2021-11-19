@@ -1,3 +1,5 @@
+import os
+import uuid
 from datetime import datetime
 from io import BytesIO
 
@@ -20,7 +22,8 @@ async def health():
 
 @app.post('/api/predict')
 async def predict(image: UploadFile = File(...)):
-    log_info("predict called.")
+    id = uuid.uuid4()
+    log_info(f"predict called. id = {id}")
 
     # preprocess image file
 
@@ -28,8 +31,11 @@ async def predict(image: UploadFile = File(...)):
     log_info(f"filename = {filename}")
     data = await image.read()
     pil_image = Image.open(BytesIO(data))
+    os.makedirs(f"data/{id}")
+    pil_image.save(f"data/{id}/original.png")
     # 28 * 28 に変換
     resized = pil_image.resize((28, 28))
+    resized.save(f"data/{id}/resized.png")
     arr = np.array(resized)
     log_info(f"arr.shpae = {arr.shape}")
     # 軸の変換
