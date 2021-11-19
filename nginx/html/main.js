@@ -1,12 +1,3 @@
-function escapeHTML(obj) {
-  return JSON.stringify(obj)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-}
-
 async function promiseCanvasToBlob(mimeType, qualityArgument) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -43,12 +34,12 @@ async function predict() {
 
     // 数字
     const tdMessage = document.createElement('td')
-    tdMessage.textContent = escapeHTML(i)
+    tdMessage.textContent = i
     tr.appendChild(tdMessage)
 
     // 確率
     const tdCreatedAt = document.createElement('td')
-    tdCreatedAt.textContent = escapeHTML(v)
+    tdCreatedAt.textContent = (v * 100).toFixed(1)
     tr.appendChild(tdCreatedAt)
 
     tableBody.appendChild(tr)

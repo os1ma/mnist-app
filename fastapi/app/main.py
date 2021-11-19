@@ -7,6 +7,7 @@ import numpy as np
 import onnxruntime
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
+from scipy.special import softmax
 
 MODEL_FILE = '/tmp/model.onnx'
 
@@ -53,7 +54,7 @@ async def predict(image: UploadFile = File(...)):
     output = onnx_session.run(None, {input_name: standardized})
     log_info(f"output = {output}")
 
-    result = output[0][0].tolist()
+    result = softmax(output[0][0]).tolist()
     log_info(f"result = {result}")
 
     return {'result': result}
