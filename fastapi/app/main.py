@@ -15,13 +15,20 @@ def log_info(message: str) -> None:
     now = datetime.now()
     print(f"[{now}] {message}")
 
+def get_model_tag() -> str:
+    return os.environ['MODEL_TAG']
+
 app = FastAPI()
 
 @app.get('/api/health')
 async def health():
     return {'health': 'ok'}
 
-# TODO @app.get('/api/models/current')
+@app.get('/api/models/current')
+async def current_model():
+    tag = get_model_tag()
+    return {'tag': tag}
+
 # TODO @app.get('/api/predictions')
 
 @app.post('/api/predictions')
