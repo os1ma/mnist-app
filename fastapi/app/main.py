@@ -105,12 +105,9 @@ async def post_predict(image: UploadFile = File(...)):
 
     # モデルが DB に保存されていなければ保存する
     tag = get_model_tag()
+    ModelDao().insert_if_not_exist(tag)
     model = ModelDao().find_by_tag(tag)
-    log_info(f"model = {model}")
-    if model == None:
-        model_id = ModelDao().insert(tag)
-    else:
-        model_id = model['id']
+    model_id = model['id']
     log_info(f"model_id = {model_id}")
 
     # 推論結果を保存
@@ -126,6 +123,6 @@ async def post_predict():
 
     images = ImageDao().find_all()
     for image in images:
-        resized = Image.open(image['preprocessed_image_path'])
+        resized = Image.open(image['resizedFilename'])
         result = predict(resized)
         PredictionDao().insert(model['id'], image['id'], result)

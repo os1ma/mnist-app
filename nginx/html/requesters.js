@@ -31,15 +31,15 @@ export async function getHistory(models) {
   history.forEach((h) => {
     // 値を計算
     models.forEach((m) => {
-      const imageId = h.image_id
-      const modelTag = h.model_tag
+      const imageId = h.imageId
+      const modelTag = h.modelTag
 
       if (!values[imageId]) {
         values[imageId] = {}
       }
 
       const result = JSON.parse(h.result)
-      if (!values[imageId][modelTag]) {
+      if (!values[imageId][modelTag] && result != null) {
         values[imageId][modelTag] = calculateHighProbabilityValue(result)
       }
     })

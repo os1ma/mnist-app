@@ -10,12 +10,12 @@ class PredictionDao:
                 select
                     i.id,
                     m.tag,
-                    i.original_image_path,
-                    i.preprocessed_image_path,
+                    i.original_filename,
+                    i.resized_filename,
                     p.result
                 from images i
                 left join predictions p on i.id = p.image_id
-                inner join models m on m.id = p.model_id
+                left join models m on m.id = p.model_id
                 order by i.id desc
                 '''.strip()
             db.cur.execute(sql)
@@ -24,10 +24,10 @@ class PredictionDao:
             predictions = []
             for row in rows:
                 prediction = {
-                    'image_id': row[0],
-                    'model_tag': row[1],
-                    'original_image_path': row[2],
-                    'preprocessed_image_path': row[3],
+                    'imageId': row[0],
+                    'modelTag': row[1],
+                    'originalFilename': row[2],
+                    'resizedFilename': row[3],
                     'result': row[4]
                 }
                 predictions.append(prediction)

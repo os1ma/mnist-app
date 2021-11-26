@@ -104,11 +104,11 @@ async function loadHistoryBody(models) {
       const tr = document.createElement('tr')
       tableBody.appendChild(tr)
 
-      const h = history.filter((h) => h.image_id == imageId)[0]
+      const h = history.filter((h) => h.imageId == imageId)[0]
 
       // 手書き画像
       const originalImage = document.createElement('img')
-      originalImage.src = h.original_image_path
+      originalImage.src = h.originalFilename
       originalImage.height = IMAGE_SIZE
       const tdOriginalImage = document.createElement('td')
       tdOriginalImage.appendChild(originalImage)
@@ -116,7 +116,7 @@ async function loadHistoryBody(models) {
 
       // リサイズ後
       const resizedImage = document.createElement('img')
-      resizedImage.src = h.preprocessed_image_path
+      resizedImage.src = h.resizedFilename
       resizedImage.height = IMAGE_SIZE
       const tdResizedImage = document.createElement('td')
       tdResizedImage.appendChild(resizedImage)

@@ -1,13 +1,13 @@
 Table models {
   id int [pk, increment, not null]
-  tag varchar [not null]
+  tag varchar [unique, not null]
   created_at timestamp [default: `now()`]
 }
 
 Table images {
   id int [pk, increment, not null]
-  original_image_path varchar [not null]
-  preprocessed_image_path varchar [not null]
+  original_filename varchar [not null]
+  resized_filename varchar [not null]
   created_at timestamp [default: `now()`]
 }
 
