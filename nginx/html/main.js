@@ -82,6 +82,18 @@ async function loadModels() {
 
 const IMAGE_SIZE = 70
 
+function calculateHighProbabilityValue(result) {
+  var maxResult = 0
+  var maxResultIndex = 0
+  result.forEach((v, i) => {
+    if (v > maxResult) {
+      maxResult = v
+      maxResultIndex = i
+    }
+  })
+  return maxResultIndex
+}
+
 async function loadHistory() {
   await loadModels()
 
@@ -96,41 +108,64 @@ async function loadHistory() {
     tableBody.removeChild(tableBody.firstChild)
   }
 
+  const values = {}
   history.forEach((h) => {
-    const tr = document.createElement('tr')
+    // 値を計算
+    models.forEach((m) => {
+      const imageId = h.image_id
+      const modelTag = h.model_tag
 
-    // 手書き画像
-    const originalImage = document.createElement('img')
-    originalImage.src = h.original_image_path
-    originalImage.height = IMAGE_SIZE
-    const tdOriginalImage = document.createElement('td')
-    tdOriginalImage.appendChild(originalImage)
-    tr.appendChild(tdOriginalImage)
+      if (!values[imageId]) {
+        values[imageId] = {}
+      }
 
-    // リサイズ後
-    const resizedImage = document.createElement('img')
-    resizedImage.src = h.preprocessed_image_path
-    resizedImage.height = IMAGE_SIZE
-    const tdResizedImage = document.createElement('td')
-    tdResizedImage.appendChild(resizedImage)
-    tr.appendChild(tdResizedImage)
-
-    // TODO
-    const tdModelTag = document.createElement('td')
-    const result = JSON.parse(h.result)
-    var maxResult = 0
-    var maxResultIndex = 0
-    result.forEach((v, i) => {
-      if (v > maxResult) {
-        maxResult = v
-        maxResultIndex = i
+      const result = JSON.parse(h.result)
+      if (!values[imageId][modelTag]) {
+        values[imageId][modelTag] = calculateHighProbabilityValue(result)
       }
     })
-    tdModelTag.textContent = maxResultIndex
-    tr.appendChild(tdModelTag)
-
-    tableBody.appendChild(tr)
   })
+  console.log('=== values ===')
+  console.log(values)
+
+  Object.keys(values)
+    .reverse()
+    .forEach((imageId, i) => {
+      console.log(`=== valeus[imageId] imageId = ${imageId} ===`)
+      console.log(values[imageId])
+
+      tr = document.createElement('tr')
+      tableBody.appendChild(tr)
+
+      h = history.filter((h) => h.image_id == imageId)[0]
+
+      // 手書き画像
+      const originalImage = document.createElement('img')
+      originalImage.src = h.original_image_path
+      originalImage.height = IMAGE_SIZE
+      const tdOriginalImage = document.createElement('td')
+      tdOriginalImage.appendChild(originalImage)
+      tr.appendChild(tdOriginalImage)
+
+      // リサイズ後
+      const resizedImage = document.createElement('img')
+      resizedImage.src = h.preprocessed_image_path
+      resizedImage.height = IMAGE_SIZE
+      const tdResizedImage = document.createElement('td')
+      tdResizedImage.appendChild(resizedImage)
+      tr.appendChild(tdResizedImage)
+
+      // 値
+      models.forEach((m) => {
+        const modelTag = m.tag
+        console.log(`modelTag = ${modelTag}`)
+        const tdModelTag = document.createElement('td')
+        if (values[imageId][modelTag] != undefined) {
+          tdModelTag.textContent = values[imageId][modelTag]
+        }
+        tr.appendChild(tdModelTag)
+      })
+    })
 }
 
 async function repredict() {
