@@ -9,4 +9,6 @@ mlruns/
 
 # fastapi
 __pycache__/
-/fastapi/data/
+
+# images
+/images/

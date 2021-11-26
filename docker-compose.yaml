@@ -7,6 +7,7 @@ services:
       - 8000:80
     volumes:
       - ${PWD}/nginx/html:/usr/share/nginx/html
+      - ${PWD}/images:/usr/share/nginx/html/images
       - ${PWD}/nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - api
@@ -22,6 +23,7 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - ${PWD}/fastapi:/app
+      - ${PWD}/images:/images
     depends_on:
       - db
 

@@ -14,6 +14,7 @@ from app.dao.model_dao import ModelDao
 from app.dao.prediction_dao import PredictionDao
 
 MODEL_FILE = '/model.onnx'
+IMAGE_DIR = '/images'
 
 
 def log_info(message: str) -> None:
@@ -62,12 +63,12 @@ async def post_predict(image: UploadFile = File(...)):
     log_info(f"filename = {filename}")
     data = await image.read()
     pil_image = Image.open(BytesIO(data))
-    os.makedirs(f"data/{id}")
-    original_image_filename = f"data/{id}/original.png"
+    os.makedirs(f"{IMAGE_DIR}/{id}")
+    original_image_filename = f"{IMAGE_DIR}/{id}/original.png"
     pil_image.save(original_image_filename)
     # 28 * 28 に変換
     resized = pil_image.resize((28, 28))
-    resized_image_filename = f"data/{id}/resized.png"
+    resized_image_filename = f"{IMAGE_DIR}/{id}/resized.png"
     resized.save(resized_image_filename)
     arr = np.array(resized)
     log_info(f"arr.shpae = {arr.shape}")

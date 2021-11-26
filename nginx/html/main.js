@@ -99,9 +99,11 @@ async function loadHistory() {
     const tr = document.createElement('tr')
 
     // 手書き画像
-    const tdMessage = document.createElement('td')
-    tdMessage.textContent = h.image_id
-    tr.appendChild(tdMessage)
+    const originalImage = document.createElement('img')
+    originalImage.src = h.original_image_path
+    const tdOriginalImage = document.createElement('td')
+    tdOriginalImage.appendChild(originalImage)
+    tr.appendChild(tdOriginalImage)
 
     // リサイズ後
     const tdCreatedAt = document.createElement('td')
