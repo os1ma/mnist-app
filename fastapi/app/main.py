@@ -9,7 +9,7 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from scipy.special import softmax
 
-MODEL_FILE = '/tmp/model.onnx'
+MODEL_FILE = '/model.onnx'
 
 def log_info(message: str) -> None:
     now = datetime.now()
