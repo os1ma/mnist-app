@@ -3,6 +3,9 @@ lightning_logs/
 MNIST/
 *.onnx
 
+# mlflow
+mlruns/
+
 # fastapi
 __pycache__/
 /fastapi/data/

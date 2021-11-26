@@ -4,6 +4,7 @@ import multiprocessing
 import os
 
 import matplotlib.pyplot as plt
+import mlflow
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -68,19 +69,24 @@ class MNISTModel(LightningModule):
         test_ds = MNIST(PATH_DATASETS, train=False, download=True, transform=transforms.ToTensor())
         return DataLoader(test_ds, batch_size=BATCH_SIZE, num_workers=multiprocessing.cpu_count())
 
+def main() -> None:
+    with mlflow.start_run() as run:
+        mnist_model = MNISTModel(28 * 28, 128, 10)
 
-mnist_model = MNISTModel(28 * 28, 128, 10)
+        trainer = Trainer(
+            gpus=AVAIL_GPUS,
+            max_epochs=3,
+        )
 
-trainer = Trainer(
-    gpus=AVAIL_GPUS,
-    max_epochs=30,
-)
+        trainer.fit(mnist_model)
+        trainer.test(ckpt_path='best')
 
-trainer.fit(mnist_model)
-trainer.test(ckpt_path='best')
+        # export onnx file
+        # https://pytorch-lightning.readthedocs.io/en/latest/common/production_inference.html
+        filepath = "./model.onnx"
+        input_sample = torch.randn((1, 28, 28))
+        mnist_model.to_onnx(filepath, input_sample, export_params=True)
+        mlflow.log_artifact(filepath)
 
-# export onnx file
-# https://pytorch-lightning.readthedocs.io/en/latest/common/production_inference.html
-filepath = "./model.onnx"
-input_sample = torch.randn((1, 28, 28))
-mnist_model.to_onnx(filepath, input_sample, export_params=True)
+if __name__ == '__main__':
+    main()

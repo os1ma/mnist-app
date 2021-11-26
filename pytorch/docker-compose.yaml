@@ -7,16 +7,3 @@ services:
     volumes:
       - ${PWD}:/opt/pytorch
     working_dir: /opt/pytorch
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-  tensorboard:
-    image: tensorflow/tensorflow
-    command: tensorboard --host 0.0.0.0 --logdir ./lightning_logs
-    ports:
-      - 6006:6006
-    volumes:
-      - ${PWD}:/opt/pytorch
-    working_dir: /opt/pytorch
