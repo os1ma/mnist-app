@@ -1,6 +1,7 @@
 version: '3'
 
 services:
+
   frontend:
     image: nginx:1.21.1-alpine
     ports:
@@ -10,6 +11,7 @@ services:
       - ${PWD}/nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - api
+
   api:
     build: ./fastapi/
     command: /start-reload.sh
@@ -17,6 +19,17 @@ services:
       PORT: 8000
     volumes:
       - ${PWD}/fastapi:/app
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7.35
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ${PWD}/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ${PWD}/mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf
+
   mlflow:
     build: ./pytorch/
     command: mlflow ui --host 0.0.0.0
