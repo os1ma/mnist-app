@@ -5,6 +5,9 @@
 </head>
 <body>
   <h1>MNIST で遊んでみよう</h1>
+  <h2>使用中のモデル</h2>
+  <p>タグ：aaa</p>
+  <h2>推論</h2>
   <canvas
     id="draw-area"
     width="280px"
@@ -13,7 +16,7 @@
   ></canvas>
   <button id="clear-button">書き直す</button>
   <button id="submit-button">推論実行</button>
-  <h2>実行結果</h2>
+  <h2>推論結果</h2>
   <table>
     <thead>
       <tr>
@@ -22,6 +25,18 @@
       </tr>
     </thead>
     <tbody id="result-table-body"></tbody>
+  </table>
+  <h2>推論履歴</h2>
+  <table>
+    <thead>
+      <tr>
+        <td>手書き画像</td>
+        <td>前処理後</td>
+        <td>abc...</td>
+        <td>def...</td>
+        <td>ghi...</td>
+      </tr>
+    </thead>
   </table>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="main.js"></script>
