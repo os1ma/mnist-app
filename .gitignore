@@ -10,5 +10,8 @@ mlruns/
 # fastapi
 __pycache__/
 
+# mysql
+/mysql/data/
+
 # images
 /images/

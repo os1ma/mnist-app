@@ -37,6 +37,7 @@ services:
     volumes:
       - ${PWD}/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
       - ${PWD}/mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf
+      - ${PWD}/mysql/data:/var/lib/mysql
 
   mlflow:
     build: ./pytorch/
