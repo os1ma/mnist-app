@@ -133,7 +133,13 @@ async function loadHistory() {
   })
 }
 
+async function repredict() {
+  await axios.post('/api/predictions/repredict-all')
+  await loadHistory()
+}
+
 document.querySelector('#submit-button').addEventListener('click', predict)
+document.querySelector('#submit-repredict').addEventListener('click', repredict)
 
 getModelTag()
 

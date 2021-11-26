@@ -52,26 +52,8 @@ async def query_history():
     return {'history': history}
 
 
-@app.post('/api/predictions')
-async def post_predict(image: UploadFile = File(...)):
-    id = uuid.uuid4()
-    log_info(f"predict called. id = {id}")
-
-    # preprocess image file
-
-    filename = image.filename
-    log_info(f"filename = {filename}")
-    data = await image.read()
-    pil_image = Image.open(BytesIO(data))
-    os.makedirs(f"{IMAGE_DIR}/{id}")
-    original_image_filename = f"{IMAGE_DIR}/{id}/original.png"
-    pil_image.save(original_image_filename)
-    # 28 * 28 に変換
-    resized = pil_image.resize((28, 28))
-    resized_image_filename = f"{IMAGE_DIR}/{id}/resized.png"
-    resized.save(resized_image_filename)
-    arr = np.array(resized)
-    log_info(f"arr.shpae = {arr.shape}")
+def predict(resized_image):
+    arr = np.array(resized_image)
     # 軸の変換
     transposed = arr.transpose()[3:]
     log_info(
@@ -92,6 +74,35 @@ async def post_predict(image: UploadFile = File(...)):
     result = softmax(output[0][0]).tolist()
     log_info(f"result = {result}")
 
+    return result
+
+
+@app.post('/api/predictions')
+async def post_predict(image: UploadFile = File(...)):
+    id = uuid.uuid4()
+    log_info(f"predict called. id = {id}")
+
+    # preprocess image file
+
+    filename = image.filename
+    log_info(f"filename = {filename}")
+    data = await image.read()
+    pil_image = Image.open(BytesIO(data))
+    os.makedirs(f"{IMAGE_DIR}/{id}")
+    original_image_filename = f"{IMAGE_DIR}/{id}/original.png"
+    pil_image.save(original_image_filename)
+    # 28 * 28 に変換
+    resized = pil_image.resize((28, 28))
+    resized_image_filename = f"{IMAGE_DIR}/{id}/resized.png"
+    resized.save(resized_image_filename)
+
+    # 画像を保存
+    image_id = ImageDao().insert(original_image_filename, resized_image_filename)
+    log_info(f"image_id = {image_id}")
+
+    # predict
+    result = predict(resized)
+
     # モデルが DB に保存されていなければ保存する
     tag = get_model_tag()
     model = ModelDao().find_by_tag(tag)
@@ -102,11 +113,19 @@ async def post_predict(image: UploadFile = File(...)):
         model_id = model['id']
     log_info(f"model_id = {model_id}")
 
-    # 画像を保存
-    image_id = ImageDao().insert(original_image_filename, resized_image_filename)
-    log_info(f"image_id = {image_id}")
-
     # 推論結果を保存
     PredictionDao().insert(model_id, image_id, result)
 
     return {'result': result}
+
+
+@app.post('/api/predictions/repredict-all')
+async def post_predict():
+    tag = get_model_tag()
+    model = ModelDao().find_by_tag(tag)
+
+    images = ImageDao().find_all()
+    for image in images:
+        resized = Image.open(image['preprocessed_image_path'])
+        result = predict(resized)
+        PredictionDao().insert(model['id'], image['id'], result)
