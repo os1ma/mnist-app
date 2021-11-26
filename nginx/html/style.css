@@ -2,6 +2,10 @@
   display: flex;
 }
 
+.prediction {
+  width: 50%;
+}
+
 #draw-area {
   border: 1px solid #000000;
 }
