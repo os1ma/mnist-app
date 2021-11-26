@@ -4,9 +4,9 @@ from app.dao.dao_utils import MySQLConnection
 
 
 class PredictionDao:
-    def find_all(self, tag: str):
+    def find_all(self):
         with MySQLConnection() as db:
-            sql = 'select id, model_id, image_id, result, created_at from models order by id'
+            sql = 'select id, model_id, image_id, result, created_at from predictions order by id'
             db.cur.execute(sql)
             rows = db.cur.fetchall()
 

@@ -53,9 +53,17 @@ async function getModelTag() {
   document.querySelector('#model-tag').textContent = tag
 }
 
+async function loadHistory() {
+  const response = await axios.get('/api/predictions')
+  const predictions = response.data.predictions
+  console.log(predictions)
+}
+
 document.querySelector('#submit-button').addEventListener('click', predict)
 
 getModelTag()
+
+loadHistory()
 
 // canvas
 // see https://tsuyopon.xyz/2018/09/14/how-to-create-drawing-app-part1/

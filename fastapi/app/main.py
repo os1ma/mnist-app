@@ -38,11 +38,15 @@ async def current_model():
     tag = get_model_tag()
     return {'tag': tag}
 
-# TODO @app.get('/api/predictions')
+
+@app.get('/api/predictions')
+async def get_predictions():
+    predictions = PredictionDao().find_all()
+    return {'predictions': predictions}
 
 
 @app.post('/api/predictions')
-async def predict(image: UploadFile = File(...)):
+async def post_predict(image: UploadFile = File(...)):
     id = uuid.uuid4()
     log_info(f"predict called. id = {id}")
 

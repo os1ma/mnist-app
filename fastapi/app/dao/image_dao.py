@@ -2,9 +2,9 @@ from app.dao.dao_utils import MySQLConnection
 
 
 class ImageDao:
-    def find_all(self, tag: str):
+    def find_all(self):
         with MySQLConnection() as db:
-            sql = 'select id, original_image_path, preprocessed_image_path, created_at from models order by id'
+            sql = 'select id, original_image_path, preprocessed_image_path, created_at from images order by id'
             db.cur.execute(sql)
             rows = db.cur.fetchall()
 
