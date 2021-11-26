@@ -55,17 +55,15 @@ document
     await loadHistory()
   })
 
-// load initial data
+// history loading functions
 
-getCurrentModelTag().then((tag) => {
-  document.querySelector('#model-tag').textContent = tag
-})
+async function loadHistory() {
+  const models = await getModels()
+  await loadHistoryHeader(models)
+  await loadHistoryBody(models)
+}
 
-var models = []
-
-async function loadHistoryHeader() {
-  models = await getModels()
-
+async function loadHistoryHeader(models) {
   const header = document.querySelector('#history-table-header-tr')
 
   while (header.firstChild) {
@@ -98,7 +96,7 @@ async function loadHistoryBody(models) {
 
   Object.keys(values)
     .reverse()
-    .forEach((imageId, i) => {
+    .forEach((imageId) => {
       const tr = document.createElement('tr')
       tableBody.appendChild(tr)
 
@@ -132,9 +130,10 @@ async function loadHistoryBody(models) {
     })
 }
 
-async function loadHistory() {
-  await loadHistoryHeader()
-  await loadHistoryBody(models)
-}
+// load initial data
+
+getCurrentModelTag().then((tag) => {
+  document.querySelector('#model-tag').textContent = tag
+})
 
 loadHistory()
