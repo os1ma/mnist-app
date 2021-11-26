@@ -44,6 +44,9 @@ async function predict() {
 
     tableBody.appendChild(tr)
   })
+
+  clear()
+  loadHistory()
 }
 
 async function getModelTag() {
@@ -53,10 +56,74 @@ async function getModelTag() {
   document.querySelector('#model-tag').textContent = tag
 }
 
+var models = []
+
+async function loadModels() {
+  const response = await axios.get('/api/models')
+  models = response.data.models
+  console.log('=== models ===')
+  console.log(models)
+
+  const header = document.querySelector('#history-table-header-tr')
+
+  // TODO 意味を明確にする
+  while (header.childNodes.length > 4) {
+    console.log('removing header last...')
+    console.log(header.lastChild)
+    header.removeChild(header.lastChild)
+  }
+
+  models.forEach((m) => {
+    const td = document.createElement('td')
+    td.textContent = m.tag
+    header.appendChild(td)
+  })
+}
+
 async function loadHistory() {
-  const response = await axios.get('/api/predictions')
-  const predictions = response.data.predictions
-  console.log(predictions)
+  await loadModels()
+
+  const response = await axios.get('/api/prediction-history')
+  const history = response.data.history
+  console.log('=== history ===')
+  console.log(history)
+
+  const tableBody = document.querySelector('#history-table-body')
+
+  while (tableBody.firstChild) {
+    tableBody.removeChild(tableBody.firstChild)
+  }
+
+  var previous = null
+  history.forEach((h) => {
+    const tr = document.createElement('tr')
+
+    // 手書き画像
+    const tdMessage = document.createElement('td')
+    tdMessage.textContent = h.image_id
+    tr.appendChild(tdMessage)
+
+    // リサイズ後
+    const tdCreatedAt = document.createElement('td')
+    tdCreatedAt.textContent = h.image_id
+    tr.appendChild(tdCreatedAt)
+
+    // TODO
+    const tdModelTag = document.createElement('td')
+    const result = JSON.parse(h.result)
+    var maxResult = 0
+    var maxResultIndex = 0
+    result.forEach((v, i) => {
+      if (v > maxResult) {
+        maxResult = v
+        maxResultIndex = i
+      }
+    })
+    tdModelTag.textContent = maxResultIndex
+    tr.appendChild(tdModelTag)
+
+    tableBody.appendChild(tr)
+  })
 }
 
 document.querySelector('#submit-button').addEventListener('click', predict)

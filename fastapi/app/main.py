@@ -39,10 +39,16 @@ async def current_model():
     return {'tag': tag}
 
 
-@app.get('/api/predictions')
-async def get_predictions():
-    predictions = PredictionDao().find_all()
-    return {'predictions': predictions}
+@app.get('/api/models')
+async def get_models():
+    models = ModelDao().find_all()
+    return {'models': models}
+
+
+@app.get('/api/prediction-history')
+async def query_history():
+    history = PredictionDao().query_history()
+    return {'history': history}
 
 
 @app.post('/api/predictions')

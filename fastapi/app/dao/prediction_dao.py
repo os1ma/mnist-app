@@ -4,20 +4,31 @@ from app.dao.dao_utils import MySQLConnection
 
 
 class PredictionDao:
-    def find_all(self):
+    def query_history(self):
         with MySQLConnection() as db:
-            sql = 'select id, model_id, image_id, result, created_at from predictions order by id'
+            sql = '''\
+                select
+                    i.id,
+                    m.tag,
+                    i.original_image_path,
+                    i.preprocessed_image_path,
+                    p.result
+                from images i
+                left join predictions p on i.id = p.image_id
+                inner join models m on m.id = p.model_id
+                order by i.id desc
+                '''.strip()
             db.cur.execute(sql)
             rows = db.cur.fetchall()
 
             predictions = []
             for row in rows:
                 prediction = {
-                    'id': row[0],
-                    'model_id': row[1],
-                    'image_id': row[2],
-                    'result': row[3],
-                    'created_at': row[4]
+                    'image_id': row[0],
+                    'model_tag': row[1],
+                    'original_image_path': row[2],
+                    'preprocessed_image_path': row[3],
+                    'result': row[4]
                 }
                 predictions.append(prediction)
 
