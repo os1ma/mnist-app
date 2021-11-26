@@ -16,7 +16,7 @@ class HandWritingCanvas {
   // public
 
   async toBlob(mimeType, qualityArgument) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.canvas.toBlob(
         (result) => {
           resolve(result)
@@ -27,7 +27,27 @@ class HandWritingCanvas {
     })
   }
 
+  clear() {
+    this.isEmpty = true
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
   // private
+
+  dragStart() {
+    this.context.beginPath()
+
+    this.dragging = true
+    this.isEmpty = false
+  }
+
+  dragEnd() {
+    this.context.closePath()
+    this.dragging = false
+
+    this.lastPosition.x = null
+    this.lastPosition.y = null
+  }
 
   draw(x, y) {
     if (!this.dragging) {
@@ -50,26 +70,6 @@ class HandWritingCanvas {
 
     this.lastPosition.x = x
     this.lastPosition.y = y
-  }
-
-  clear() {
-    this.isEmpty = true
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
-  }
-
-  dragStart(event) {
-    this.context.beginPath()
-
-    this.dragging = true
-    this.isEmpty = false
-  }
-
-  dragEnd(event) {
-    this.context.closePath()
-    this.dragging = false
-
-    this.lastPosition.x = null
-    this.lastPosition.y = null
   }
 }
 
