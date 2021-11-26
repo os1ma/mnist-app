@@ -1,7 +1,6 @@
 version: '3'
 
 services:
-
   frontend:
     image: nginx:1.21.1-alpine
     ports:
@@ -17,6 +16,10 @@ services:
     command: /start-reload.sh
     environment:
       PORT: 8000
+      MYSQL_HOST: db
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: password
     volumes:
       - ${PWD}/fastapi:/app
     depends_on:
@@ -25,7 +28,10 @@ services:
   db:
     image: mysql:5.7.35
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: password
     volumes:
       - ${PWD}/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
       - ${PWD}/mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf

@@ -21,7 +21,10 @@ app = FastAPI()
 async def health():
     return {'health': 'ok'}
 
-@app.post('/api/predict')
+# TODO @app.get('/api/models/current')
+# TODO @app.get('/api/predictions')
+
+@app.post('/api/predictions')
 async def predict(image: UploadFile = File(...)):
     id = uuid.uuid4()
     log_info(f"predict called. id = {id}")

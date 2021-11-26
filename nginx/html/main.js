@@ -16,7 +16,7 @@ async function predict() {
   const data = new FormData()
   const image = await promiseCanvasToBlob('image/png')
   data.append('image', image, 'number.png')
-  const response = await axios.post('/api/predict', data, headers)
+  const response = await axios.post('/api/predictions', data, headers)
 
   // show result
 
