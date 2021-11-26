@@ -2,31 +2,33 @@
 <head>
   <meta charset="UTF-8" />
   <title>MNIST で遊んでみよう</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>MNIST で遊んでみよう</h1>
   <h2>使用中のモデル</h2>
   <p>タグ：<span id="model-tag"></span></p>
-  <h2>推論</h2>
-  <canvas
-    id="draw-area"
-    width="280px"
-    height="280px"
-    style="border: 1px solid #000000"
-  ></canvas>
-  <button id="clear-button">書き直す</button>
-  <button id="submit-button">推論実行</button>
-  <h2>推論結果</h2>
-  <table>
-    <thead>
-      <tr>
-        <td>数字</td>
-        <td>確率</td>
-      </tr>
-    </thead>
-    <tbody id="result-table-body"></tbody>
-  </table>
-  <h2>推論履歴</h2>
+  <div class="flex-wrapper">
+    <div>
+      <h2>推論</h2>
+      <canvas id="draw-area"></canvas>
+      <button id="clear-button">書き直す</button>
+      <button id="submit-button">推論実行</button>
+    </div>
+    <div>
+      <h2>推論結果</h2>
+      <table>
+        <thead>
+          <tr>
+            <td>数字</td>
+            <td>確率</td>
+          </tr>
+        </thead>
+        <tbody id="result-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <h2>推論履歴 (もっとも確率の高かった値のみ表示)</h2>
   <table>
     <thead>
       <tr id="history-table-header-tr">
@@ -39,6 +41,7 @@
     </thead>
     <tbody id="history-table-body"></tbody>
   </table>
+  <button id="submit-repredict">現在のモデルで推論し直す</button>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="main.js"></script>
 </body>

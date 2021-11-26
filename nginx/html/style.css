@@ -1,0 +1,9 @@
+.flex-wrapper {
+  display: flex;
+}
+
+#draw-area {
+  width: 280px;
+  height: 280px;
+  border: 1px solid #000000;
+}
