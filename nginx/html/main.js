@@ -1,20 +1,19 @@
-async function promiseCanvasToBlob(mimeType, qualityArgument) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (result) => {
-        resolve(result)
-      },
-      mimeType,
-      qualityArgument
-    )
-  })
-}
+import { initializeHandWrittingCanvas } from './hand-writting-canvas.js'
+
+// canvas settings
+
+const canvas = initializeHandWrittingCanvas('#draw-area')
+
+const clearButton = document.querySelector('#clear-button')
+clearButton.addEventListener('click', () => {
+  canvas.clear()
+})
 
 async function predict() {
   // post image
   const headers = { 'content-type': 'multipart/form-data' }
   const data = new FormData()
-  const image = await promiseCanvasToBlob('image/png')
+  const image = await canvas.toBlob('image/png')
   data.append('image', image, 'number.png')
   const response = await axios.post('/api/predictions', data, headers)
 
@@ -45,7 +44,7 @@ async function predict() {
     tableBody.appendChild(tr)
   })
 
-  clear()
+  canvas.clear()
   loadHistory()
 }
 
@@ -134,10 +133,10 @@ async function loadHistory() {
       console.log(`=== valeus[imageId] imageId = ${imageId} ===`)
       console.log(values[imageId])
 
-      tr = document.createElement('tr')
+      const tr = document.createElement('tr')
       tableBody.appendChild(tr)
 
-      h = history.filter((h) => h.image_id == imageId)[0]
+      const h = history.filter((h) => h.image_id == imageId)[0]
 
       // 手書き画像
       const originalImage = document.createElement('img')
@@ -179,63 +178,3 @@ document.querySelector('#submit-repredict').addEventListener('click', repredict)
 getModelTag()
 
 loadHistory()
-
-// canvas
-// see https://tsuyopon.xyz/2018/09/14/how-to-create-drawing-app-part1/
-
-const canvas = document.querySelector('#draw-area')
-const context = canvas.getContext('2d')
-
-const lastPosition = { x: null, y: null }
-let isDrag = false
-
-function draw(x, y) {
-  if (!isDrag) {
-    return
-  }
-
-  context.lineCap = 'round'
-  context.lineJoin = 'round'
-  context.lineWidth = 10
-  context.strokeStyle = 'black'
-
-  if (lastPosition.x === null || lastPosition.y === null) {
-    context.moveTo(x, y)
-  } else {
-    context.moveTo(lastPosition.x, lastPosition.y)
-  }
-
-  context.lineTo(x, y)
-  context.stroke()
-
-  lastPosition.x = x
-  lastPosition.y = y
-}
-
-function clear() {
-  context.clearRect(0, 0, canvas.width, canvas.height)
-}
-
-function dragStart(event) {
-  context.beginPath()
-
-  isDrag = true
-}
-
-function dragEnd(event) {
-  context.closePath()
-  isDrag = false
-
-  lastPosition.x = null
-  lastPosition.y = null
-}
-
-const clearButton = document.querySelector('#clear-button')
-clearButton.addEventListener('click', clear)
-
-canvas.addEventListener('mousedown', dragStart)
-canvas.addEventListener('mouseup', dragEnd)
-canvas.addEventListener('mouseout', dragEnd)
-canvas.addEventListener('mousemove', (event) => {
-  draw(event.layerX, event.layerY)
-})
