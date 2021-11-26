@@ -9,6 +9,8 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from scipy.special import softmax
 
+from app.dao.model_dao import ModelDao
+
 MODEL_FILE = '/model.onnx'
 
 def log_info(message: str) -> None:
@@ -66,5 +68,12 @@ async def predict(image: UploadFile = File(...)):
 
     result = softmax(output[0][0]).tolist()
     log_info(f"result = {result}")
+
+    # モデルが DB に保存されていなければ保存する
+    tag = get_model_tag()
+    m = ModelDao().find_by_tag(tag)
+    log_info(f"model = {m}")
+    if m == None:
+        ModelDao().insert(tag)
 
     return {'result': result}
