@@ -11,7 +11,7 @@
   <div class="flex-wrapper">
     <div>
       <h2>推論</h2>
-      <canvas id="draw-area"></canvas>
+      <canvas id="draw-area" width="280px" height="280px"></canvas>
       <button id="clear-button">書き直す</button>
       <button id="submit-button">推論実行</button>
     </div>
@@ -28,7 +28,8 @@
       </table>
     </div>
   </div>
-  <h2>推論履歴 (もっとも確率の高かった値のみ表示)</h2>
+  <h2>推論履歴 (最も確率の高かった値のみ表示)</h2>
+  <button id="submit-repredict">現在のモデルで推論し直す</button>
   <table>
     <thead>
       <tr id="history-table-header-tr">
@@ -41,7 +42,6 @@
     </thead>
     <tbody id="history-table-body"></tbody>
   </table>
-  <button id="submit-repredict">現在のモデルで推論し直す</button>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="main.js"></script>
 </body>
