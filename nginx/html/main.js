@@ -80,6 +80,8 @@ async function loadModels() {
   })
 }
 
+const IMAGE_SIZE = 70
+
 async function loadHistory() {
   await loadModels()
 
@@ -94,21 +96,24 @@ async function loadHistory() {
     tableBody.removeChild(tableBody.firstChild)
   }
 
-  var previous = null
   history.forEach((h) => {
     const tr = document.createElement('tr')
 
     // 手書き画像
     const originalImage = document.createElement('img')
     originalImage.src = h.original_image_path
+    originalImage.height = IMAGE_SIZE
     const tdOriginalImage = document.createElement('td')
     tdOriginalImage.appendChild(originalImage)
     tr.appendChild(tdOriginalImage)
 
     // リサイズ後
-    const tdCreatedAt = document.createElement('td')
-    tdCreatedAt.textContent = h.image_id
-    tr.appendChild(tdCreatedAt)
+    const resizedImage = document.createElement('img')
+    resizedImage.src = h.preprocessed_image_path
+    resizedImage.height = IMAGE_SIZE
+    const tdResizedImage = document.createElement('td')
+    tdResizedImage.appendChild(resizedImage)
+    tr.appendChild(tdResizedImage)
 
     // TODO
     const tdModelTag = document.createElement('td')
