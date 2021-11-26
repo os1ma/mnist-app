@@ -20,6 +20,10 @@ document.querySelector('#clear-button').addEventListener('click', () => {
 // submit button settings
 
 document.querySelector('#submit-button').addEventListener('click', async () => {
+  if (canvas.isEmpty) {
+    return
+  }
+
   const result = await predict(canvas)
 
   const tableBody = document.querySelector('#result-table-body')

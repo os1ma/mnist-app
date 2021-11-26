@@ -9,7 +9,8 @@ class HandWritingCanvas {
     this.context = canvas.getContext('2d')
 
     this.lastPosition = { x: null, y: null }
-    this.isDrag = false
+    this.dragging = false
+    this.isEmpty = true
   }
 
   // public
@@ -29,7 +30,7 @@ class HandWritingCanvas {
   // private
 
   draw(x, y) {
-    if (!this.isDrag) {
+    if (!this.dragging) {
       return
     }
 
@@ -52,18 +53,20 @@ class HandWritingCanvas {
   }
 
   clear() {
+    this.isEmpty = true
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 
   dragStart(event) {
     this.context.beginPath()
 
-    this.isDrag = true
+    this.dragging = true
+    this.isEmpty = false
   }
 
   dragEnd(event) {
     this.context.closePath()
-    this.isDrag = false
+    this.dragging = false
 
     this.lastPosition.x = null
     this.lastPosition.y = null
