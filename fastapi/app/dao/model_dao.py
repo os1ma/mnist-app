@@ -24,3 +24,4 @@ class ModelDao:
             sql = 'insert into models (tag) values (%s)'
             db.cur.execute(sql, (tag,))
             db.con.commit()
+            return db.cur.lastrowid

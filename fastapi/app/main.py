@@ -11,6 +11,7 @@ from scipy.special import softmax
 
 from app.dao.image_dao import ImageDao
 from app.dao.model_dao import ModelDao
+from app.dao.prediction_dao import PredictionDao
 
 MODEL_FILE = '/model.onnx'
 
@@ -82,12 +83,19 @@ async def predict(image: UploadFile = File(...)):
 
     # モデルが DB に保存されていなければ保存する
     tag = get_model_tag()
-    m = ModelDao().find_by_tag(tag)
-    log_info(f"model = {m}")
-    if m == None:
-        ModelDao().insert(tag)
+    model = ModelDao().find_by_tag(tag)
+    log_info(f"model = {model}")
+    if model == None:
+        model_id = ModelDao().insert(tag)
+    else:
+        model_id = model['id']
+    log_info(f"model_id = {model_id}")
 
     # 画像を保存
-    ImageDao().insert(original_image_filename, resized_image_filename)
+    image_id = ImageDao().insert(original_image_filename, resized_image_filename)
+    log_info(f"image_id = {image_id}")
+
+    # 推論結果を保存
+    PredictionDao().insert(model_id, image_id, result)
 
     return {'result': result}
