@@ -74,7 +74,7 @@ class HandWritingCanvas {
 }
 
 export function initializeHandWrittingCanvas(selectors) {
-  const canvasElement = document.querySelector('#draw-area')
+  const canvasElement = document.querySelector(selectors)
   const canvas = new HandWritingCanvas(canvasElement)
 
   canvasElement.addEventListener('mousedown', () => {

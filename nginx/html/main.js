@@ -1,4 +1,4 @@
-import { initializeHandWrittingCanvas } from './hand-writting-canvas.js'
+import { initializeHandWrittingCanvas } from './hand-writing-canvas.js'
 import {
   getCurrentModelTag,
   getHistory,
