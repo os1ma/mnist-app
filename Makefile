@@ -6,6 +6,7 @@ build:
 	&& cd pytorch \
 	&& docker-compose build
 
+.PHONY: build_api
 build_api:
 	cp "${PROJECT_HOME}/pytorch/mlruns/0/${RUN_ID}/artifacts/model.onnx" \
 	"${PROJECT_HOME}/fastapi/models/${RUN_ID}.onnx" \
