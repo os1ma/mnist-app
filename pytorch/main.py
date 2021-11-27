@@ -1,4 +1,5 @@
 import tempfile
+from datetime import datetime
 
 import japanize_matplotlib
 import matplotlib.pyplot as plt
@@ -10,11 +11,14 @@ import torch.optim as optim
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from torchinfo import summary
-from torchviz import make_dot
 from tqdm import tqdm
 
 data_root = '.'
+
+
+def log_info(message: str) -> None:
+    now = datetime.now()
+    print(f"[{now}] {message}")
 
 
 class Net(nn.Module):
@@ -108,11 +112,12 @@ def main() -> None:
         mlflow.log_param('lr', lr)
 
         net = Net(n_input, n_output, n_hidden).to(device)
+        log_info(f"net = {net}")
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
         #num_epochs = 100
-        num_epochs = 3
+        num_epochs = 20
         mlflow.log_param('num_epochs', num_epochs)
 
         for epoch in range(num_epochs):
@@ -164,13 +169,21 @@ def main() -> None:
             val_loss = val_loss * batch_size / n_test
 
             outputEpoch = epoch+1
-            print(
+            log_info(
                 f'Epoch [{outputEpoch}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
             mlflow.log_metric('epoch', outputEpoch)
             mlflow.log_metric('train_loss', train_loss, outputEpoch)
             mlflow.log_metric('train_acc', train_acc.item(), outputEpoch)
             mlflow.log_metric('val_loss', val_loss, outputEpoch)
             mlflow.log_metric('val_acc', val_acc.item(), outputEpoch)
+
+        filepath = './model.onnx'
+        dummy_input = torch.randn((1, 28, 28)).view(-1)
+        net.cpu()
+        log_info("export onnx model")
+        torch.onnx.export(net, dummy_input, filepath, verbose=True,
+                          input_names=['input'], output_names=['output'])
+        mlflow.log_artifact(filepath)
 
 
 if __name__ == '__main__':
