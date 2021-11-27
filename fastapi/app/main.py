@@ -125,6 +125,7 @@ async def post_predict(image: UploadFile = File(...)):
 @app.post('/api/predictions/repredict-all')
 async def post_predict():
     tag = get_model_tag()
+    ModelDao().insert_if_not_exist(tag)
     model = ModelDao().find_by_tag(tag)
 
     images = ImageDao().find_all()

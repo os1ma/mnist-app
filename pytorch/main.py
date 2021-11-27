@@ -93,7 +93,7 @@ def main() -> None:
 
         n_input = images[0].shape[0]
         n_output = len(set(list(labels.data.numpy())))
-        n_hidden = 128
+        n_hidden = 1
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
@@ -117,7 +117,7 @@ def main() -> None:
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
         #num_epochs = 100
-        num_epochs = 20
+        num_epochs = 10
         mlflow.log_param('num_epochs', num_epochs)
 
         for epoch in range(num_epochs):
