@@ -5,6 +5,7 @@ from io import BytesIO
 
 import numpy as np
 import onnxruntime
+import torchvision.transforms as transforms
 from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from scipy.special import softmax
@@ -54,24 +55,29 @@ async def query_history():
 
 def predict(resized_image):
     arr = np.array(resized_image)
+    log_info(f"arr.shape = {arr.shape}")
     # 軸の変換
     transposed = arr.transpose()[3:]
     log_info(
         f"transposed.shape = {transposed.shape}, transposed = {transposed}, max = {np.amax(transposed)}")
-    # 型を変換
-    typed = transposed.astype('float32')
-    # 0 ~ 1 に正規化
-    standardized = typed / 255
+    # 学習時と同様の変換
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(0.5, 0.5),
+        transforms.Lambda(lambda x: x.view(-1)),
+    ])
+    input = transform(transposed).numpy()
     log_info(
-        f"standardized.shape = {standardized.shape}, standardized = {standardized}")
+        f"input.shape = {input.shape}, input = {input}, max = {np.amax(input)}")
 
     # predict
     onnx_session = onnxruntime.InferenceSession(MODEL_FILE)
     input_name = onnx_session.get_inputs()[0].name
-    output = onnx_session.run(None, {input_name: standardized})
+    output = onnx_session.run(None, {input_name: input})
     log_info(f"output = {output}")
 
-    result = softmax(output[0][0]).tolist()
+    # 確率に変換
+    result = softmax(output[0]).tolist()
     log_info(f"result = {result}")
 
     return result
