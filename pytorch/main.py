@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchinfo import summary
 from torchviz import make_dot
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 data_root = '.'
 
@@ -136,90 +136,22 @@ def main() -> None:
         mlflow.log_param('seed', seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
-
-        net = Net(n_input, n_output, n_hidden)
-
-        net = net.to(device)
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms = True
 
         lr = 0.01
         mlflow.log_param('lr', lr)
 
-        optimizer = torch.optim.SGD(net.parameters(), lr=lr)
-
-        criterion = nn.CrossEntropyLoss()
-
-        for p in net.named_parameters():
-            print(p)
-
-        print(net)
-
-        summary(net, (784,))
-
-        for images, labels in train_loader:
-            break
-
-        inputs = images.to(device)
-        labels = labels.to(device)
-
-        outputs = net(inputs)
-
-        print(outputs)
-
-        loss = criterion(outputs, labels)
-
-        print(loss.item())
-
-        # FIXME
-        with tempfile.NamedTemporaryFile(suffix='.png') as f:
-            dot = make_dot(loss, params=dict(net.named_parameters()))
-            dot.format = 'png'
-            dot.render(f.name)
-            mlflow.log_artifact(f.name, 'torchviz')
-
-        loss.backward()
-
-        # 勾配計算の結果
-        w = net.to('cpu')
-        print(w.l1.weight.grad.numpy())
-        print(w.l1.bias.grad.numpy())
-        print(w.l2.weight.grad.numpy())
-        print(w.l2.bias.grad.numpy())
-
-        # 勾配降下法の適用
-        optimizer.step()
-
-        # パラメータ値の表示
-        print(net.l1.weight)
-        print(net.l1.bias)
-
-        # 乱数の固定化
-        torch.manual_seed(123)
-        torch.cuda.manual_seed(123)
-        torch.backends.cudnn.deterministic = True
-        torch.use_deterministic_algorithms = True
-
-        # 学習率
-        lr = 0.01
-
-        # モデルインスタンス生成
         net = Net(n_input, n_output, n_hidden).to(device)
-
-        # 損失関数： 交差エントロピー関数
         criterion = nn.CrossEntropyLoss()
-
-        # 最適化関数: 勾配降下法
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
-        # 繰り返し回数
         #num_epochs = 100
         num_epochs = 3
+        mlflow.log_param('num_epochs', num_epochs)
 
         # 評価結果記録用
         history = np.zeros((0, 5))
-
-        # tqdmライブラリのインポート
-
-        # 繰り返し計算メインループ
 
         for epoch in range(num_epochs):
             train_acc, train_loss = 0, 0
@@ -227,33 +159,23 @@ def main() -> None:
             n_train, n_test = 0, 0
 
             # 訓練フェーズ
-            # for inputs, labels in tqdm(train_loader):
-            for inputs, labels in train_loader:
+            for inputs, labels in tqdm(train_loader):
                 n_train += len(labels)
 
-                # GPUヘ転送
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                # 勾配の初期化
                 optimizer.zero_grad()
 
-                # 予測計算
                 outputs = net(inputs)
 
-                # 損失計算
                 loss = criterion(outputs, labels)
-
-                # 勾配計算
                 loss.backward()
 
-                # パラメータ修正
                 optimizer.step()
 
-                # 予測ラベル導出
                 predicted = torch.max(outputs, 1)[1]
 
-                # 損失と精度の計算
                 train_loss += loss.item()
                 train_acc += (predicted == labels).sum()
 
@@ -264,16 +186,12 @@ def main() -> None:
                 inputs_test = inputs_test.to(device)
                 labels_test = labels_test.to(device)
 
-                # 予測計算
                 outputs_test = net(inputs_test)
 
-                # 損失計算
                 loss_test = criterion(outputs_test, labels_test)
 
-                # 予測ラベル導出
                 predicted_test = torch.max(outputs_test, 1)[1]
 
-                # 損失と精度の計算
                 val_loss += loss_test.item()
                 val_acc += (predicted_test == labels_test).sum()
 

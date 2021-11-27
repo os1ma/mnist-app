@@ -14,7 +14,7 @@ docker-compose up
 
 ```console
 cd pytorch
-docker-compose up
+docker-compose run pytorch
 ```
 
 推論の履歴は http://localhost:5000 にアクセスすると、MLflow の UI で確認できます
