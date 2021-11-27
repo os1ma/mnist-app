@@ -9,15 +9,14 @@ def find_all(db: MySQLConnection):
 
 
 def find_by_tag(db: MySQLConnection, tag: str):
-    with MySQLConnection() as db:
-        sql = 'select id, tag, created_at from models where tag = %s'
-        db.cur.execute(sql, (tag,))
-        rows = db.cur.fetchall()
+    sql = 'select id, tag, created_at from models where tag = %s'
+    db.cur.execute(sql, (tag,))
+    rows = db.cur.fetchall()
 
-        if len(rows) == 0:
-            return None
+    if len(rows) == 0:
+        return None
 
-        return _row2dict(rows[0])
+    return _row2dict(rows[0])
 
 
 def _row2dict(row):

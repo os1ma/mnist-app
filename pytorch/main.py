@@ -93,7 +93,7 @@ def main() -> None:
 
         n_input = images[0].shape[0]
         n_output = len(set(list(labels.data.numpy())))
-        n_hidden = 1
+        n_hidden = 128
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)

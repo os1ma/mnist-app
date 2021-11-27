@@ -19,6 +19,12 @@ docker-compose run pytorch
 
 推論の履歴は http://localhost:5000 にアクセスすると、MLflow の UI で確認できます
 
+学習で GPU を使う場合は以下のコマンドになります
+
+```console
+docker-compose -f docker-compose.yaml -f docker-compose.override-gpu.yaml run pytorch
+```
+
 ### 新しいモデルをビルド・デプロイ
 
 MLflow の UI で確認した Run の ID を指定し、モデルをビルドします

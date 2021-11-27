@@ -5,7 +5,7 @@ from io import BytesIO
 from app import predictor
 from app.dao import image_dao, model_dao, prediction_dao
 from app.dao.dao_utils import MySQLConnection
-from app.util import get_model_tag
+from app.util import get_model_tag, log_info
 from fastapi import APIRouter, File, UploadFile
 from PIL import Image
 
@@ -64,6 +64,7 @@ async def post_predict():
         tag = get_model_tag()
         model_dao.insert_if_not_exist(db, tag)
         model = model_dao.find_by_tag(db, tag)
+        log_info(f"model = {model}")
 
         images = image_dao.find_all(db)
         for image in images:
