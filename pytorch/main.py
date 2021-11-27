@@ -33,17 +33,17 @@ class Net(nn.Module):
 
 
 def save_sample_data():
-    train_set0 = datasets.MNIST(
+    train_set = datasets.MNIST(
         root=data_root,
         train=True,
         download=True
     )
-    mlflow.log_param("データ件数", len(train_set0))
+    mlflow.log_param("データ件数", len(train_set))
 
     fig = plt.figure(figsize=(10, 3))
     for i in range(20):
         ax = plt.subplot(2, 10, i + 1)
-        image, label = train_set0[i]
+        image, label = train_set[i]
 
         plt.imshow(image, cmap='gray_r')
         ax.set_title(label)
@@ -52,27 +52,9 @@ def save_sample_data():
     mlflow.log_figure(fig, 'input/data_samples.png')
 
 
-def print_sample_image():
-    transform1 = transforms.Compose([
-        transforms.ToTensor(),
-    ])
-
-    train_set1 = datasets.MNIST(
-        root=data_root,
-        train=True,
-        download=True,
-        transform=transform1
-    )
-    image, label = train_set1[0]
-
-    # TODO
-    print(image)
-
-
 def main() -> None:
     with mlflow.start_run() as run:
         save_sample_data()
-        print_sample_image()
 
         transform = transforms.Compose([
             transforms.ToTensor(),
@@ -105,26 +87,9 @@ def main() -> None:
         for images, labels in train_loader:
             break
 
-        fig = plt.figure(figsize=(10, 3))
-        for i in range(20):
-            ax = plt.subplot(2, 10, i + 1)
-
-            image = images[i].numpy()
-            label = labels[i]
-
-            image2 = (image + 1) / 2
-
-            plt.imshow(image2.reshape(28, 28), cmap='gray_r')
-
-            ax.set_title(f'{label}')
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-        mlflow.log_figure(fig, 'images/sample2.png')
-
-        n_input = image.shape[0]
+        n_input = images[0].shape[0]
         n_output = len(set(list(labels.data.numpy())))
         n_hidden = 128
-
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
@@ -197,13 +162,15 @@ def main() -> None:
             val_acc = val_acc / n_test
             train_loss = train_loss * batch_size / n_train
             val_loss = val_loss * batch_size / n_test
+
+            outputEpoch = epoch+1
             print(
-                f'Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
-            mlflow.log_metric('epoch', epoch)
-            mlflow.log_metric('train_loss', train_loss, epoch)
-            mlflow.log_metric('train_acc', train_acc.item(), epoch)
-            mlflow.log_metric('val_loss', val_loss, epoch)
-            mlflow.log_metric('val_acc', val_acc.item(), epoch)
+                f'Epoch [{outputEpoch}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
+            mlflow.log_metric('epoch', outputEpoch)
+            mlflow.log_metric('train_loss', train_loss, outputEpoch)
+            mlflow.log_metric('train_acc', train_acc.item(), outputEpoch)
+            mlflow.log_metric('val_loss', val_loss, outputEpoch)
+            mlflow.log_metric('val_acc', val_acc.item(), outputEpoch)
 
 
 if __name__ == '__main__':
