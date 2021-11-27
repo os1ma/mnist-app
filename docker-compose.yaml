@@ -14,6 +14,7 @@ services:
 
   api:
     build: ./fastapi/
+    image: mnist-mlops-app_api:${API_DOCKER_TAG:-latest}
     command: /start-reload.sh
     environment:
       PORT: 8000
