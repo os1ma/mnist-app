@@ -26,16 +26,6 @@ def main() -> None:
         )
         mlflow.log_param("データ件数", len(train_set0))
 
-        image, label = train_set0[0]
-        # mlflow.log_metric("入力データの型", str(type(image)))
-        # mlflow.log_metric('正解データの型', str(type(label)))
-
-        fig = plt.figure(figsize=(2, 3))
-        plt.title(label)
-        plt.imshow(image, cmap='gray_r')
-        plt.axis('off')
-        mlflow.log_figure(fig, 'sample.png')
-
         fig = plt.figure(figsize=(10, 3))
         for i in range(20):
             ax = plt.subplot(2, 10, i + 1)
@@ -45,7 +35,7 @@ def main() -> None:
             ax.set_title(label)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-        mlflow.log_figure(fig, 'sample2.png')
+        mlflow.log_figure(fig, 'input/data_samples.png')
 
         transform1 = transforms.Compose([
             transforms.ToTensor(),
@@ -59,71 +49,18 @@ def main() -> None:
         )
         image, label = train_set1[0]
 
-        # print('入力データの型: ', type(image))
-        # print('入力データのshape: ', image.shape)
-        # mlflow.log_metric('入力データの最小値', image.data.min())
-        # mlflow.log_metcic('入力データの最大値', image.data.max())
-
         # TODO
         print(image)
 
-        # transform2 = transforms.Compose([
-        #     transforms.ToTensor(),
-        #     transforms.Normalize(0.5, 0.5),
-        # ])
-
-        # train_set2 = datasets.MNIST(
-        #     root=data_root,  train=True,  download=True,
-        #     transform=transform2)
-
-        # # 変換結果の確認
-
-        # image, label = train_set2[0]
-        # print('shape: ', image.shape)
-        # print('最小値: ', image.data.min())
-        # print('最大値: ', image.data.max())
-
-        # transform3 = transforms.Compose([
-        #     transforms.ToTensor(),
-        #     transforms.Normalize(0.5, 0.5),
-        #     transforms.Lambda(lambda x: x.view(-1))
-        # ])
-
-        # train_set3 = datasets.MNIST(
-        #     root=data_root,  train=True,
-        #     download=True, transform=transform3)
-
-        # # 変換結果の確認
-
-        # image, label = train_set3[0]
-        # print('shape: ', image.shape)
-        # print('最小値: ', image.data.min())
-        # print('最大値: ', image.data.max())
-
-        # データ変換用関数 Transforms
-        # (1) Imageをテンソル化
-        # (2) [0, 1]の範囲の値を[-1, 1]の範囲にする
-        # (3) データのshapeを[1, 28, 28]から[784]に変換
-
         transform = transforms.Compose([
-            # (1) データのテンソル化
             transforms.ToTensor(),
-
-            # (2) データの正規化
             transforms.Normalize(0.5, 0.5),
-
-            # (3) 1階テンソルに変換
             transforms.Lambda(lambda x: x.view(-1)),
         ])
 
-        # データ取得用関数 Dataset
-
-        # 訓練用データセットの定義
         train_set = datasets.MNIST(
             root=data_root, train=True,
             download=True, transform=transform)
-
-        # 検証データセットの定義
         test_set = datasets.MNIST(
             root=data_root, train=False,
             download=True, transform=transform)
@@ -143,13 +80,8 @@ def main() -> None:
             shuffle=False
         )
 
-        # print(len(train_loader))
-
         for images, labels in train_loader:
             break
-
-        # print(images.shape)
-        # print(labels.shape)
 
         fig = plt.figure(figsize=(10, 3))
         for i in range(20):
@@ -166,7 +98,6 @@ def main() -> None:
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
         mlflow.log_figure(fig, 'sample3.png')
-        # plt.show()
 
         n_input = image.shape[0]
         n_output = len(set(list(labels.data.numpy())))
@@ -350,12 +281,10 @@ def main() -> None:
             history = np.vstack((history, item))
 
         # 損失と精度の確認
-
         print(f'初期状態: 損失: {history[0,3]:.5f} 精度: {history[0,4]:.5f}')
         print(f'最終状態: 損失: {history[-1,3]:.5f} 精度: {history[-1,4]:.5f}')
 
         # 学習曲線の表示 (損失)
-
         plt.rcParams['figure.figsize'] = (9, 8)
         fig = plt.figure()
         plt.plot(history[:, 0], history[:, 1], 'b', label='訓練')
@@ -365,10 +294,8 @@ def main() -> None:
         plt.title('学習曲線(損失)')
         plt.legend()
         mlflow.log_figure(fig, 'loss.png')
-        # plt.show()
 
         # 学習曲線の表示 (精度)
-
         plt.rcParams['figure.figsize'] = (9, 8)
         fig = plt.figure()
         plt.plot(history[:, 0], history[:, 2], 'b', label='訓練')
@@ -378,7 +305,6 @@ def main() -> None:
         plt.title('学習曲線(精度)')
         plt.legend()
         mlflow.log_figure(fig, 'val.png')
-        # plt.show()
 
 
 if __name__ == '__main__':
