@@ -5,5 +5,5 @@ services:
     build: .
     command: python3 main.py
     volumes:
-      - ${PWD}:/opt/pytorch
-    working_dir: /opt/pytorch
+      - ${PWD}:/pytorch
+    working_dir: /pytorch
