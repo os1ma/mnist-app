@@ -119,7 +119,7 @@ def main() -> None:
             ax.set_title(f'{label}')
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
-        mlflow.log_figure(fig, 'sample3.png')
+        mlflow.log_figure(fig, 'images/sample2.png')
 
         n_input = image.shape[0]
         n_output = len(set(list(labels.data.numpy())))
@@ -149,9 +149,6 @@ def main() -> None:
         #num_epochs = 100
         num_epochs = 3
         mlflow.log_param('num_epochs', num_epochs)
-
-        # 評価結果記録用
-        history = np.zeros((0, 5))
 
         for epoch in range(num_epochs):
             train_acc, train_loss = 0, 0
@@ -202,35 +199,11 @@ def main() -> None:
             val_loss = val_loss * batch_size / n_test
             print(
                 f'Epoch [{epoch+1}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
-            item = np.array(
-                [epoch+1, train_loss, train_acc, val_loss, val_acc])
-            history = np.vstack((history, item))
-
-        # 損失と精度の確認
-        print(f'初期状態: 損失: {history[0,3]:.5f} 精度: {history[0,4]:.5f}')
-        print(f'最終状態: 損失: {history[-1,3]:.5f} 精度: {history[-1,4]:.5f}')
-
-        # 学習曲線の表示 (損失)
-        plt.rcParams['figure.figsize'] = (9, 8)
-        fig = plt.figure()
-        plt.plot(history[:, 0], history[:, 1], 'b', label='訓練')
-        plt.plot(history[:, 0], history[:, 3], 'k', label='検証')
-        plt.xlabel('繰り返し回数')
-        plt.ylabel('損失')
-        plt.title('学習曲線(損失)')
-        plt.legend()
-        mlflow.log_figure(fig, 'loss.png')
-
-        # 学習曲線の表示 (精度)
-        plt.rcParams['figure.figsize'] = (9, 8)
-        fig = plt.figure()
-        plt.plot(history[:, 0], history[:, 2], 'b', label='訓練')
-        plt.plot(history[:, 0], history[:, 4], 'k', label='検証')
-        plt.xlabel('繰り返し回数')
-        plt.ylabel('精度')
-        plt.title('学習曲線(精度)')
-        plt.legend()
-        mlflow.log_figure(fig, 'val.png')
+            mlflow.log_metric('epoch', epoch)
+            mlflow.log_metric('train_loss', train_loss, epoch)
+            mlflow.log_metric('train_acc', train_acc.item(), epoch)
+            mlflow.log_metric('val_loss', val_loss, epoch)
+            mlflow.log_metric('val_acc', val_acc.item(), epoch)
 
 
 if __name__ == '__main__':
