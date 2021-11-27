@@ -17,40 +17,62 @@ from tqdm.notebook import tqdm
 data_root = '.'
 
 
+class Net(nn.Module):
+    def __init__(self, n_input, n_output, n_hidden):
+        super().__init__()
+
+        self.l1 = nn.Linear(n_input, n_hidden)
+        self.relu = nn.ReLU(inplace=True)
+        self.l2 = nn.Linear(n_hidden, n_output)
+
+    def forward(self, x):
+        x1 = self.l1(x)
+        x2 = self.relu(x1)
+        x3 = self.l2(x2)
+        return x3
+
+
+def save_sample_data():
+    train_set0 = datasets.MNIST(
+        root=data_root,
+        train=True,
+        download=True
+    )
+    mlflow.log_param("データ件数", len(train_set0))
+
+    fig = plt.figure(figsize=(10, 3))
+    for i in range(20):
+        ax = plt.subplot(2, 10, i + 1)
+        image, label = train_set0[i]
+
+        plt.imshow(image, cmap='gray_r')
+        ax.set_title(label)
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+    mlflow.log_figure(fig, 'input/data_samples.png')
+
+
+def print_sample_image():
+    transform1 = transforms.Compose([
+        transforms.ToTensor(),
+    ])
+
+    train_set1 = datasets.MNIST(
+        root=data_root,
+        train=True,
+        download=True,
+        transform=transform1
+    )
+    image, label = train_set1[0]
+
+    # TODO
+    print(image)
+
+
 def main() -> None:
     with mlflow.start_run() as run:
-        train_set0 = datasets.MNIST(
-            root=data_root,
-            train=True,
-            download=True
-        )
-        mlflow.log_param("データ件数", len(train_set0))
-
-        fig = plt.figure(figsize=(10, 3))
-        for i in range(20):
-            ax = plt.subplot(2, 10, i + 1)
-            image, label = train_set0[i]
-
-            plt.imshow(image, cmap='gray_r')
-            ax.set_title(label)
-            ax.get_xaxis().set_visible(False)
-            ax.get_yaxis().set_visible(False)
-        mlflow.log_figure(fig, 'input/data_samples.png')
-
-        transform1 = transforms.Compose([
-            transforms.ToTensor(),
-        ])
-
-        train_set1 = datasets.MNIST(
-            root=data_root,
-            train=True,
-            download=True,
-            transform=transform1
-        )
-        image, label = train_set1[0]
-
-        # TODO
-        print(image)
+        save_sample_data()
+        print_sample_image()
 
         transform = transforms.Compose([
             transforms.ToTensor(),
@@ -106,20 +128,6 @@ def main() -> None:
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
-
-        class Net(nn.Module):
-            def __init__(self, n_input, n_output, n_hidden):
-                super().__init__()
-
-                self.l1 = nn.Linear(n_input, n_hidden)
-                self.relu = nn.ReLU(inplace=True)
-                self.l2 = nn.Linear(n_hidden, n_output)
-
-            def forward(self, x):
-                x1 = self.l1(x)
-                x2 = self.relu(x1)
-                x3 = self.l2(x2)
-                return x3
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         mlflow.log_param('device', device)
