@@ -1,6 +1,7 @@
 import os
 
-from app.dao.model_dao import ModelDao
+from app.dao import model_dao
+from app.dao.dao_utils import MySQLConnection
 from app.util import get_model_tag
 from fastapi import APIRouter
 
@@ -15,5 +16,6 @@ async def current_model():
 
 @router.get('/api/models')
 async def get_models():
-    models = ModelDao().find_all()
-    return {'models': models}
+    with MySQLConnection() as db:
+        models = model_dao.find_all(db)
+        return {'models': models}

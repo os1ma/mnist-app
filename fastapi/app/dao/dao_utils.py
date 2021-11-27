@@ -16,3 +16,6 @@ class MySQLConnection:
     def __exit__(self, exception_type, exception_value, traceback):
         self.cur.close()
         self.con.close()
+
+    def commit(self):
+        self.con.commit()

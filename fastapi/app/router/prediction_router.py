@@ -3,9 +3,8 @@ import uuid
 from io import BytesIO
 
 from app import predictor
-from app.dao.image_dao import ImageDao
-from app.dao.model_dao import ModelDao
-from app.dao.prediction_dao import PredictionDao
+from app.dao import image_dao, model_dao, prediction_dao
+from app.dao.dao_utils import MySQLConnection
 from app.util import get_model_tag
 from fastapi import APIRouter, File, UploadFile
 from PIL import Image
@@ -17,54 +16,62 @@ router = APIRouter()
 
 @router.get('/api/prediction-history')
 async def query_history():
-    history = PredictionDao().query_history()
-    return {'history': history}
+    with MySQLConnection() as db:
+        history = prediction_dao.query_history(db)
+        return {'history': history}
 
 
 @router.post('/api/predictions')
 async def post_predict(image: UploadFile = File(...)):
-    id = uuid.uuid4()
+    with MySQLConnection() as db:
+        id = uuid.uuid4()
 
-    # 画像を PIL のオブジェクトに変換
-    pil_image = await upload_file_to_pil_image(image)
-    os.makedirs(f"{IMAGE_DIR}/{id}")
-    original_image_filename = f"{IMAGE_DIR}/{id}/original.png"
-    pil_image.save(original_image_filename)
+        # 画像を PIL のオブジェクトに変換
+        pil_image = await upload_file_to_pil_image(image)
+        os.makedirs(f"{IMAGE_DIR}/{id}")
+        original_image_filename = f"{IMAGE_DIR}/{id}/original.png"
+        pil_image.save(original_image_filename)
 
-    # リサイズ
-    resized = predictor.resize_image(pil_image)
-    resized_image_filename = f"{IMAGE_DIR}/{id}/resized.png"
-    resized.save(resized_image_filename)
+        # リサイズ
+        resized = predictor.resize_image(pil_image)
+        resized_image_filename = f"{IMAGE_DIR}/{id}/resized.png"
+        resized.save(resized_image_filename)
 
-    # 画像を保存
-    image_id = ImageDao().insert(original_image_filename, resized_image_filename)
+        # 画像を保存
+        image_id = image_dao.insert(
+            db, original_image_filename, resized_image_filename)
 
-    # predict
-    result = predictor.predict(resized)
+        # predict
+        result = predictor.predict(resized)
 
-    # モデルが DB に保存されていなければ保存する
-    tag = get_model_tag()
-    ModelDao().insert_if_not_exist(tag)
-    model = ModelDao().find_by_tag(tag)
-    model_id = model['id']
+        # モデルが DB に保存されていなければ保存する
+        tag = get_model_tag()
+        model_dao.insert_if_not_exist(db, tag)
+        model = model_dao.find_by_tag(db, tag)
+        model_id = model['id']
 
-    # 推論結果を保存
-    PredictionDao().insert(model_id, image_id, result)
+        # 推論結果を保存
+        prediction_dao.insert(db, model_id, image_id, result)
 
-    return {'result': result}
+        db.commit()
+
+        return {'result': result}
 
 
 @router.post('/api/predictions/repredict-all')
 async def post_predict():
-    tag = get_model_tag()
-    ModelDao().insert_if_not_exist(tag)
-    model = ModelDao().find_by_tag(tag)
+    with MySQLConnection() as db:
+        tag = get_model_tag()
+        model_dao.insert_if_not_exist(db, tag)
+        model = model_dao.find_by_tag(db, tag)
 
-    images = ImageDao().find_all()
-    for image in images:
-        resized = Image.open(image['resizedFilename'])
-        result = predictor.predict(resized)
-        PredictionDao().insert(model['id'], image['id'], result)
+        images = image_dao.find_all(db)
+        for image in images:
+            resized = Image.open(image['resizedFilename'])
+            result = predictor.predict(resized)
+            prediction_dao.insert(db, model['id'], image['id'], result)
+
+        db.commit()
 
 
 async def upload_file_to_pil_image(image: UploadFile):
