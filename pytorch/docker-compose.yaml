@@ -7,3 +7,8 @@ services:
     volumes:
       - ${PWD}:/pytorch
     working_dir: /pytorch
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
