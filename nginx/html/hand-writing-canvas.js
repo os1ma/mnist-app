@@ -15,7 +15,7 @@ class HandWritingCanvas {
 
   // public
 
-  async toBlob(mimeType, qualityArgument) {
+  toBlob(mimeType, qualityArgument) {
     return new Promise((resolve) => {
       this.canvas.toBlob(
         (result) => {
