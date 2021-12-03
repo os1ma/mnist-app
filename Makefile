@@ -34,6 +34,8 @@ train_gpu:
 connect_db:
 	docker-compose exec db mysql -uapp -ppassword app
 
-.PHONY: down
-down:
-	docker-compose down
+.PHONY: clean
+clean:
+	docker-compose down \
+  && rm -rf "${PROJECT_HOME}/pytorch/mlruns" \
+  && rm -rf "${PROJECT_HOME}/mysql/data"
