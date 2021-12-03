@@ -1,4 +1,4 @@
-# mnist-mlops-app
+# mnist-app
 
 ## 依存関係
 
