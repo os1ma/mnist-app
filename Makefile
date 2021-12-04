@@ -37,5 +37,5 @@ connect_db:
 .PHONY: clean
 clean:
 	docker-compose down \
-  && rm -rf "${PROJECT_HOME}/pytorch/mlruns" \
-  && rm -rf "${PROJECT_HOME}/mysql/data"
+  && sudo rm -rf "${PROJECT_HOME}/pytorch/mlruns" \
+  && sudo rm -rf "${PROJECT_HOME}/mysql/data"
