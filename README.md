@@ -1,5 +1,9 @@
 # mnist-app
 
+MNIST を使った Web アプリケーションのサンプル
+
+![mnist-app.png](./doc/mnist-app.png)
+
 ## 依存関係
 
 - Docker
