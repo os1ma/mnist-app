@@ -3,8 +3,8 @@ import uuid
 from io import BytesIO
 
 from app import predictor
-from app.dao import image_dao, model_dao, prediction_dao
-from app.dao.dao_utils import MySQLConnection
+from app.gateway import image_gateway, model_gateway, prediction_gateway
+from app.gateway.gateway_utils import MySQLConnection
 from app.util import get_model_tag, log_info
 from fastapi import APIRouter, File, UploadFile
 from PIL import Image
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get('/api/prediction-history')
 async def query_history():
     with MySQLConnection() as db:
-        history = prediction_dao.query_history(db)
+        history = prediction_gateway.query_history(db)
         return {'history': history}
 
 
@@ -38,7 +38,7 @@ async def post_predict(image: UploadFile = File(...)):
         resized.save(resized_image_filename)
 
         # 画像を保存
-        image_id = image_dao.insert(
+        image_id = image_gateway.insert(
             db, original_image_filename, resized_image_filename)
 
         # predict
@@ -46,12 +46,12 @@ async def post_predict(image: UploadFile = File(...)):
 
         # モデルが DB に保存されていなければ保存する
         tag = get_model_tag()
-        model_dao.insert_if_not_exist(db, tag)
-        model = model_dao.find_by_tag(db, tag)
+        model_gateway.insert_if_not_exist(db, tag)
+        model = model_gateway.find_by_tag(db, tag)
         model_id = model['id']
 
         # 推論結果を保存
-        prediction_dao.insert(db, model_id, image_id, result)
+        prediction_gateway.insert(db, model_id, image_id, result)
 
         db.commit()
 
@@ -62,15 +62,15 @@ async def post_predict(image: UploadFile = File(...)):
 async def post_predict():
     with MySQLConnection() as db:
         tag = get_model_tag()
-        model_dao.insert_if_not_exist(db, tag)
-        model = model_dao.find_by_tag(db, tag)
+        model_gateway.insert_if_not_exist(db, tag)
+        model = model_gateway.find_by_tag(db, tag)
         log_info(f"model = {model}")
 
-        images = image_dao.find_all(db)
+        images = image_gateway.find_all(db)
         for image in images:
             resized = Image.open(image['resizedFilename'])
             result = predictor.predict(resized)
-            prediction_dao.insert(db, model['id'], image['id'], result)
+            prediction_gateway.insert(db, model['id'], image['id'], result)
 
         db.commit()
 

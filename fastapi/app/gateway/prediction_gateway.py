@@ -1,6 +1,6 @@
 import json
 
-from app.dao.dao_utils import MySQLConnection
+from app.gateway.gateway_utils import MySQLConnection
 
 
 def query_history(db: MySQLConnection):

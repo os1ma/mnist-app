@@ -1,4 +1,4 @@
-from app.dao.dao_utils import MySQLConnection
+from app.gateway.gateway_utils import MySQLConnection
 
 
 def find_all(db: MySQLConnection):
