@@ -2,14 +2,15 @@ import os
 import uuid
 from io import BytesIO
 
+import app.stream_logger as stream_logger
 from app import predictor
+from app.config import IMAGE_DIR, MODEL_TAG
 from app.gateway import image_gateway, model_gateway, prediction_gateway
-from app.gateway.gateway_utils import MySQLConnection
-from app.util import get_model_tag, log_info
+from app.gateway.mysql_connection import MySQLConnection
 from fastapi import APIRouter, File, UploadFile
 from PIL import Image
 
-IMAGE_DIR = '/images'
+logger = stream_logger.of(__name__)
 
 router = APIRouter()
 
@@ -45,9 +46,8 @@ async def post_predict(image: UploadFile = File(...)):
         result = predictor.predict(resized)
 
         # モデルが DB に保存されていなければ保存する
-        tag = get_model_tag()
-        model_gateway.insert_if_not_exist(db, tag)
-        model = model_gateway.find_by_tag(db, tag)
+        model_gateway.insert_if_not_exist(db, MODEL_TAG)
+        model = model_gateway.find_by_tag(db, MODEL_TAG)
         model_id = model['id']
 
         # 推論結果を保存
@@ -61,10 +61,9 @@ async def post_predict(image: UploadFile = File(...)):
 @router.post('/api/predictions/repredict-all')
 async def post_predict():
     with MySQLConnection() as db:
-        tag = get_model_tag()
-        model_gateway.insert_if_not_exist(db, tag)
-        model = model_gateway.find_by_tag(db, tag)
-        log_info(f"model = {model}")
+        model_gateway.insert_if_not_exist(db, MODEL_TAG)
+        model = model_gateway.find_by_tag(db, MODEL_TAG)
+        logger.info(f"model = {model}")
 
         images = image_gateway.find_all(db)
         for image in images:

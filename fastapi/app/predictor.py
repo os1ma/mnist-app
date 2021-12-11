@@ -3,9 +3,7 @@ import onnxruntime
 import torchvision.transforms as transforms
 from scipy.special import softmax
 
-from app.util import log_info
-
-MODEL_FILE = '/model.onnx'
+from app.config import MODEL_FILE
 
 
 def resize_image(original_image):

@@ -1,4 +1,4 @@
-from app.gateway.gateway_utils import MySQLConnection
+from app.gateway.mysql_connection import MySQLConnection
 
 
 def find_all(db: MySQLConnection):
