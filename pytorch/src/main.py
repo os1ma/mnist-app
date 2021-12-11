@@ -13,12 +13,11 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-data_root = '.'
+import stream_logger
 
+DATA_ROOT = '.'
 
-def log_info(message: str) -> None:
-    now = datetime.now()
-    print(f"[{now}] {message}")
+logger = stream_logger.of(__name__)
 
 
 class Net(nn.Module):
@@ -38,7 +37,7 @@ class Net(nn.Module):
 
 def save_sample_data():
     train_set = datasets.MNIST(
-        root=data_root,
+        root=DATA_ROOT,
         train=True,
         download=True
     )
@@ -69,10 +68,10 @@ def main() -> None:
         ])
 
         train_set = datasets.MNIST(
-            root=data_root, train=True,
+            root=DATA_ROOT, train=True,
             download=True, transform=transform)
         test_set = datasets.MNIST(
-            root=data_root, train=False,
+            root=DATA_ROOT, train=False,
             download=True, transform=transform)
 
         batch_size = 50
@@ -114,11 +113,11 @@ def main() -> None:
         mlflow.log_param('lr', lr)
 
         net = Net(n_input, n_output, n_hidden).to(device)
-        log_info(f"net = {net}")
+        logger.info(f"net = {net}")
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
-        num_epochs = 10
+        num_epochs = 3
         mlflow.log_param('num_epochs', num_epochs)
 
         for epoch in range(num_epochs):
@@ -170,7 +169,7 @@ def main() -> None:
             val_loss = val_loss * batch_size / n_test
 
             outputEpoch = epoch+1
-            log_info(
+            logger.info(
                 f'Epoch [{outputEpoch}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
             mlflow.log_metric('epoch', outputEpoch)
             mlflow.log_metric('train_loss', train_loss, outputEpoch)
@@ -181,7 +180,7 @@ def main() -> None:
         filepath = './model.onnx'
         dummy_input = torch.randn((1, 28, 28)).view(-1)
         net.cpu()
-        log_info("export onnx model")
+        logger.info("export onnx model")
         torch.onnx.export(net, dummy_input, filepath, verbose=True,
                           input_names=['input'], output_names=['output'])
         mlflow.log_artifact(filepath)
