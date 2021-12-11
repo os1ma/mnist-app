@@ -5,7 +5,7 @@ import {
   getModels,
   predict,
   repredict
-} from './requesters.js'
+} from './requester.js'
 
 const IMAGE_SIZE = 70
 
@@ -24,7 +24,17 @@ document.querySelector('#submit-button').addEventListener('click', async () => {
     return
   }
 
-  const result = await predict(canvas)
+  // 推論実行
+
+  const blob = await canvas.toBlob('image/png')
+  const result = await predict(blob)
+
+  // 推論結果の画像を表示
+
+  const imageUrl = URL.createObjectURL(blob)
+  document.querySelector('#result-image').src = imageUrl
+
+  // 推論結果のテーブル内を表示
 
   const tableBody = document.querySelector('#result-table-body')
 

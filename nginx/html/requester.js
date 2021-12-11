@@ -7,12 +7,11 @@ export async function repredict() {
   await axios.post('/api/predictions/repredict-all')
 }
 
-export async function predict(canvas) {
+export async function predict(blob) {
   const headers = { 'content-type': 'multipart/form-data' }
 
   const data = new FormData()
-  const image = await canvas.toBlob('image/png')
-  data.append('image', image, 'number.png')
+  data.append('image', blob, 'number.png')
 
   const response = await axios.post('/api/predictions', data, headers)
   return response.data.result

@@ -12,20 +12,23 @@
     <div class="prediction">
       <h2>推論</h2>
       <canvas id="draw-area" width="280px" height="280px"></canvas>
-      <button id="clear-button">書き直す</button>
       <button id="submit-button">推論実行</button>
+      <button id="clear-button">書き直す</button>
     </div>
     <div>
       <h2>推論結果</h2>
-      <table>
-        <thead>
-          <tr>
-            <td>数字</td>
-            <td>確率</td>
-          </tr>
-        </thead>
-        <tbody id="result-table-body"></tbody>
-      </table>
+      <div class="flex-wrapper">
+        <img id="result-image" />
+        <table>
+          <thead>
+            <tr>
+              <td>数字</td>
+              <td>確率</td>
+            </tr>
+          </thead>
+          <tbody id="result-table-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
   <h2>推論履歴 (最も確率の高かった値のみ表示)</h2>
