@@ -16,6 +16,7 @@ from tqdm import tqdm
 import stream_logger
 
 DATA_ROOT = '.'
+MODEL_OUTPUT_FILE = './model.onnx'
 
 logger = stream_logger.of(__name__)
 
@@ -54,6 +55,19 @@ def save_sample_data():
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     mlflow.log_figure(fig, 'input/data_samples.png')
+
+
+def save_model_as_onnx(net):
+    dummy_input = torch.randn((1, 28, 28)).view(-1)
+    net.cpu()
+    logger.info("export onnx model")
+    torch.onnx.export(net,
+                      dummy_input,
+                      MODEL_OUTPUT_FILE,
+                      verbose=True,
+                      input_names=['input'],
+                      output_names=['output'])
+    mlflow.log_artifact(MODEL_OUTPUT_FILE)
 
 
 def main() -> None:
@@ -183,13 +197,7 @@ def main() -> None:
             mlflow.log_metric('val_loss', val_loss, epoch)
             mlflow.log_metric('val_acc', val_acc.item(), epoch)
 
-        filepath = './model.onnx'
-        dummy_input = torch.randn((1, 28, 28)).view(-1)
-        net.cpu()
-        logger.info("export onnx model")
-        torch.onnx.export(net, dummy_input, filepath, verbose=True,
-                          input_names=['input'], output_names=['output'])
-        mlflow.log_artifact(filepath)
+        save_model_as_onnx(net)
 
 
 if __name__ == '__main__':
