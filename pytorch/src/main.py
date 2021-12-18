@@ -64,6 +64,51 @@ def fix_seed(seed):
     torch.use_deterministic_algorithms = True
 
 
+def train(dataloader, model, loss_fn, optimizer, device):
+    loss_sum = 0
+    acc_sum = 0
+
+    for X, y in tqdm(dataloader):
+        X = X.to(device)
+        y = y.to(device)
+
+        optimizer.zero_grad()
+
+        outputs = model(X)
+
+        loss = loss_fn(outputs, y)
+        loss.backward()
+
+        optimizer.step()
+
+        loss_sum += loss.item()
+
+        predicted = torch.max(outputs, 1)[1]
+        acc_sum += (predicted == y).sum()
+
+    return loss_sum, acc_sum
+
+
+def validation(dataloader, model, loss_fn, device):
+    loss_sum = 0
+    acc_sum = 0
+
+    for X, y in dataloader:
+        X = X.to(device)
+        y = y.to(device)
+
+        outputs = model(X)
+
+        loss = loss_fn(outputs, y)
+
+        loss_sum += loss.item()
+
+        predicted = torch.max(outputs, 1)[1]
+        acc_sum += (predicted == y).sum()
+
+    return loss_sum, acc_sum
+
+
 def save_model_as_onnx(net):
     dummy_input = torch.randn((1, 28, 28)).view(-1)
     net.cpu()
@@ -136,10 +181,10 @@ def main() -> None:
         lr = 0.01
         mlflow.log_param('lr', lr)
 
-        net = MNISTNet(n_input, n_output, n_hidden).to(device)
-        logger.info(f"net = {net}")
+        model = MNISTNet(n_input, n_output, n_hidden).to(device)
+        logger.info(f"net = {model}")
         loss_fn = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(net.parameters(), lr=lr)
+        optimizer = optim.SGD(model.parameters(), lr=lr)
 
         epochs = 3
         mlflow.log_param('num_epochs', epochs)
@@ -148,27 +193,11 @@ def main() -> None:
             epoch = t+1
             mlflow.log_metric('epoch', epoch)
 
-            # 訓練フェーズ
-            train_acc_sum, train_loss_sum = 0, 0
-            for X, y in tqdm(train_loader):
-                X = X.to(device)
-                y = y.to(device)
+            # 学習
+            train_loss_sum, train_acc_sum = train(
+                train_loader, model, loss_fn, optimizer, device)
 
-                optimizer.zero_grad()
-
-                outputs = net(X)
-
-                loss = loss_fn(outputs, y)
-                loss.backward()
-
-                optimizer.step()
-
-                predicted = torch.max(outputs, 1)[1]
-
-                train_loss_sum += loss.item()
-                train_acc_sum += (predicted == y).sum()
-
-            # 評価値の算出・記録
+            # 学習の状況の記録
             train_loss = train_loss_sum * batch_size / len(train_set)
             train_acc = train_acc_sum / len(train_set)
             mlflow.log_metric('train_loss', train_loss, epoch)
@@ -176,22 +205,11 @@ def main() -> None:
             logger.info(
                 f'Epoch [{epoch}/{epochs}] train loss: {train_loss:.5f} acc: {train_acc:.5f}')
 
-            # 予測フェーズ
-            valid_acc_sum, valid_loss_sum = 0, 0
-            for X, y in valid_loader:
-                X = X.to(device)
-                y = y.to(device)
+            # 評価
+            valid_loss_sum, valid_acc_sum = validation(
+                valid_loader, model, loss_fn, device)
 
-                outputs = net(X)
-
-                loss = loss_fn(outputs, y)
-
-                predicted = torch.max(outputs, 1)[1]
-
-                valid_loss_sum += loss.item()
-                valid_acc_sum += (predicted == y).sum()
-
-            # 評価値の算出・記録
+            # 評価の状況の記録
             valid_loss = valid_loss_sum * batch_size / len(valid_set)
             valid_acc = valid_acc_sum / len(valid_set)
             mlflow.log_metric('valid_loss', valid_loss, epoch)
@@ -199,7 +217,8 @@ def main() -> None:
             logger.info(
                 f'Epoch [{epoch}/{epochs}] valid loss: {valid_loss:.5f}, acc: {valid_acc:.5f}')
 
-        save_model_as_onnx(net)
+        # ONNX 形式でモデルを保存
+        save_model_as_onnx(model)
 
 
 if __name__ == '__main__':
