@@ -2,7 +2,7 @@
 lightning_logs/
 MNIST/
 *.onnx
-v1.onnx
+!v1.onnx
 
 # mlflow
 mlruns/
