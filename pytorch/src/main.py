@@ -141,21 +141,16 @@ def main() -> None:
         loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
-        epochs = 1
+        epochs = 3
         mlflow.log_param('num_epochs', epochs)
 
         for t in range(epochs):
             epoch = t+1
             mlflow.log_metric('epoch', epoch)
 
-            train_acc, train_loss = 0, 0
-            val_acc, val_loss = 0, 0
-            n_train, n_test = 0, 0
-
             # 訓練フェーズ
+            train_acc_sum, train_loss_sum = 0, 0
             for X, y in tqdm(train_loader):
-                n_train += len(y)
-
                 X = X.to(device)
                 y = y.to(device)
 
@@ -170,34 +165,33 @@ def main() -> None:
 
                 predicted = torch.max(outputs, 1)[1]
 
-                train_loss += loss.item()
-                train_acc += (predicted == y).sum()
+                train_loss_sum += loss.item()
+                train_acc_sum += (predicted == y).sum()
 
             # 評価値の算出・記録
-            train_loss = train_loss * batch_size / n_train
-            train_acc = train_acc / n_train
+            train_loss = train_loss_sum * batch_size / len(train_set)
+            train_acc = train_acc_sum / len(train_set)
             mlflow.log_metric('train_loss', train_loss, epoch)
             mlflow.log_metric('train_acc', train_acc.item(), epoch)
 
             # 予測フェーズ
+            val_acc_sum, val_loss_sum = 0, 0
             for X, y in test_loader:
-                n_test += len(y)
-
                 X = X.to(device)
                 y = y.to(device)
 
                 outputs_test = net(X)
 
-                loss_test = loss_fn(outputs_test, y)
+                loss = loss_fn(outputs_test, y)
 
                 predicted_test = torch.max(outputs_test, 1)[1]
 
-                val_loss += loss_test.item()
-                val_acc += (predicted_test == y).sum()
+                val_loss_sum += loss.item()
+                val_acc_sum += (predicted_test == y).sum()
 
             # 評価値の算出・記録
-            val_loss = val_loss * batch_size / n_test
-            val_acc = val_acc / n_test
+            val_loss = val_loss_sum * batch_size / len(test_set)
+            val_acc = val_acc_sum / len(test_set)
             mlflow.log_metric('val_loss', val_loss, epoch)
             mlflow.log_metric('val_acc', val_acc.item(), epoch)
 
