@@ -1,6 +1,3 @@
-import tempfile
-from datetime import datetime
-
 import japanize_matplotlib
 import matplotlib.pyplot as plt
 import mlflow
