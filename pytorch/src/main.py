@@ -175,7 +175,7 @@ def main() -> None:
 
         n_input = X[0].shape[0]
         n_output = len(set(list(y.data.numpy())))
-        n_hidden = 3
+        n_hidden = 2
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
@@ -190,7 +190,7 @@ def main() -> None:
 
         # エポック数だけ学習・評価を繰り返す
 
-        epochs = 3
+        epochs = 5
         mlflow.log_param('num_epochs', epochs)
 
         for t in range(epochs):
