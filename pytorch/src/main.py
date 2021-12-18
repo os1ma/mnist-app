@@ -21,7 +21,7 @@ MODEL_OUTPUT_FILE = './model.onnx'
 logger = stream_logger.of(__name__)
 
 
-class Net(nn.Module):
+class MNISTNet(nn.Module):
     def __init__(self, n_input, n_output, n_hidden):
         super().__init__()
 
@@ -55,6 +55,13 @@ def save_sample_data():
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     mlflow.log_figure(fig, 'input/data_samples.png')
+
+
+def fix_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.use_deterministic_algorithms = True
 
 
 def save_model_as_onnx(net):
@@ -124,15 +131,12 @@ def main() -> None:
 
         seed = 123
         mlflow.log_param('seed', seed)
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.use_deterministic_algorithms = True
+        fix_seed(seed)
 
         lr = 0.01
         mlflow.log_param('lr', lr)
 
-        net = Net(n_input, n_output, n_hidden).to(device)
+        net = MNISTNet(n_input, n_output, n_hidden).to(device)
         logger.info(f"net = {net}")
         loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
@@ -141,6 +145,9 @@ def main() -> None:
         mlflow.log_param('num_epochs', epochs)
 
         for t in range(epochs):
+            epoch = t+1
+            mlflow.log_metric('epoch', epoch)
+
             train_acc, train_loss = 0, 0
             val_acc, val_loss = 0, 0
             n_train, n_test = 0, 0
@@ -166,6 +173,12 @@ def main() -> None:
                 train_loss += loss.item()
                 train_acc += (predicted == y).sum()
 
+            # 評価値の算出・記録
+            train_loss = train_loss * batch_size / n_train
+            train_acc = train_acc / n_train
+            mlflow.log_metric('train_loss', train_loss, epoch)
+            mlflow.log_metric('train_acc', train_acc.item(), epoch)
+
             # 予測フェーズ
             for X, y in test_loader:
                 n_test += len(y)
@@ -183,19 +196,13 @@ def main() -> None:
                 val_acc += (predicted_test == y).sum()
 
             # 評価値の算出・記録
-            train_acc = train_acc / n_train
-            val_acc = val_acc / n_test
-            train_loss = train_loss * batch_size / n_train
             val_loss = val_loss * batch_size / n_test
-
-            epoch = t+1
-            logger.info(
-                f'Epoch [{epoch}/{epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
-            mlflow.log_metric('epoch', epoch)
-            mlflow.log_metric('train_loss', train_loss, epoch)
-            mlflow.log_metric('train_acc', train_acc.item(), epoch)
+            val_acc = val_acc / n_test
             mlflow.log_metric('val_loss', val_loss, epoch)
             mlflow.log_metric('val_acc', val_acc.item(), epoch)
+
+            logger.info(
+                f'Epoch [{epoch}/{epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
 
         save_model_as_onnx(net)
 
