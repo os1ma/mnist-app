@@ -24,6 +24,7 @@ class Net(nn.Module):
     def __init__(self, n_input, n_output, n_hidden):
         super().__init__()
 
+        # TODO Flatten と Sequential を使う
         self.l1 = nn.Linear(n_input, n_hidden)
         self.relu = nn.ReLU(inplace=True)
         self.l2 = nn.Linear(n_hidden, n_output)
@@ -68,13 +69,19 @@ def main() -> None:
         ])
 
         train_set = datasets.MNIST(
-            root=DATA_ROOT, train=True,
-            download=True, transform=transform)
+            root=DATA_ROOT,
+            train=True,
+            download=True,
+            transform=transform
+        )
         test_set = datasets.MNIST(
-            root=DATA_ROOT, train=False,
-            download=True, transform=transform)
+            root=DATA_ROOT,
+            train=False,
+            download=True,
+            transform=transform
+        )
 
-        batch_size = 50
+        batch_size = 64
         mlflow.log_param('batch_size', batch_size)
 
         train_loader = DataLoader(
@@ -82,18 +89,17 @@ def main() -> None:
             batch_size=batch_size,
             shuffle=True
         )
-
         test_loader = DataLoader(
             test_set,
             batch_size=batch_size,
             shuffle=False
         )
 
-        for images, labels in train_loader:
+        for X, y in train_loader:
             break
 
-        n_input = images[0].shape[0]
-        n_output = len(set(list(labels.data.numpy())))
+        n_input = X[0].shape[0]
+        n_output = len(set(list(y.data.numpy())))
         n_hidden = 3
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
@@ -117,10 +123,10 @@ def main() -> None:
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
-        num_epochs = 3
-        mlflow.log_param('num_epochs', num_epochs)
+        epochs = 1
+        mlflow.log_param('num_epochs', epochs)
 
-        for epoch in range(num_epochs):
+        for t in range(epochs):
             train_acc, train_loss = 0, 0
             val_acc, val_loss = 0, 0
             n_train, n_test = 0, 0
@@ -168,14 +174,14 @@ def main() -> None:
             train_loss = train_loss * batch_size / n_train
             val_loss = val_loss * batch_size / n_test
 
-            outputEpoch = epoch+1
+            epoch = t+1
             logger.info(
-                f'Epoch [{outputEpoch}/{num_epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
-            mlflow.log_metric('epoch', outputEpoch)
-            mlflow.log_metric('train_loss', train_loss, outputEpoch)
-            mlflow.log_metric('train_acc', train_acc.item(), outputEpoch)
-            mlflow.log_metric('val_loss', val_loss, outputEpoch)
-            mlflow.log_metric('val_acc', val_acc.item(), outputEpoch)
+                f'Epoch [{epoch}/{epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
+            mlflow.log_metric('epoch', epoch)
+            mlflow.log_metric('train_loss', train_loss, epoch)
+            mlflow.log_metric('train_acc', train_acc.item(), epoch)
+            mlflow.log_metric('val_loss', val_loss, epoch)
+            mlflow.log_metric('val_acc', val_acc.item(), epoch)
 
         filepath = './model.onnx'
         dummy_input = torch.randn((1, 28, 28)).view(-1)
