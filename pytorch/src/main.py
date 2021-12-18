@@ -21,20 +21,18 @@ MODEL_OUTPUT_FILE = './model.onnx'
 logger = stream_logger.of(__name__)
 
 
-class MNISTNet(nn.Module):
+class MNISTModel(nn.Module):
     def __init__(self, n_input, n_output, n_hidden):
         super().__init__()
 
-        # TODO Flatten と Sequential を使う
-        self.l1 = nn.Linear(n_input, n_hidden)
-        self.relu = nn.ReLU(inplace=True)
-        self.l2 = nn.Linear(n_hidden, n_output)
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(n_input, n_hidden),
+            nn.ReLU(),
+            nn.Linear(n_hidden, n_output),
+        )
 
     def forward(self, x):
-        x1 = self.l1(x)
-        x2 = self.relu(x1)
-        x3 = self.l2(x2)
-        return x3
+        return self.linear_relu_stack(x)
 
 
 def save_sample_data():
@@ -126,7 +124,16 @@ def main() -> None:
     with mlflow.start_run():
         mlflow.log_artifact('./src/')
 
+        seed = 123
+        mlflow.log_param('seed', seed)
+        fix_seed(seed)
+
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        mlflow.log_param('device', device)
+
         save_sample_data()
+
+        # データの準備
 
         transform = transforms.Compose([
             transforms.ToTensor(),
@@ -161,6 +168,8 @@ def main() -> None:
             shuffle=False
         )
 
+        # モデルの準備
+
         for X, y in train_loader:
             break
 
@@ -171,20 +180,15 @@ def main() -> None:
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        mlflow.log_param('device', device)
-
-        seed = 123
-        mlflow.log_param('seed', seed)
-        fix_seed(seed)
+        model = MNISTModel(n_input, n_output, n_hidden).to(device)
+        logger.info(f"model = {model}")
+        loss_fn = nn.CrossEntropyLoss()
 
         lr = 0.01
         mlflow.log_param('lr', lr)
-
-        model = MNISTNet(n_input, n_output, n_hidden).to(device)
-        logger.info(f"net = {model}")
-        loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.SGD(model.parameters(), lr=lr)
+
+        # エポック数だけ学習・評価を繰り返す
 
         epochs = 3
         mlflow.log_param('num_epochs', epochs)
@@ -194,10 +198,10 @@ def main() -> None:
             mlflow.log_metric('epoch', epoch)
 
             # 学習
+
             train_loss_sum, train_acc_sum = train(
                 train_loader, model, loss_fn, optimizer, device)
 
-            # 学習の状況の記録
             train_loss = train_loss_sum * batch_size / len(train_set)
             train_acc = train_acc_sum / len(train_set)
             mlflow.log_metric('train_loss', train_loss, epoch)
@@ -206,10 +210,10 @@ def main() -> None:
                 f'Epoch [{epoch}/{epochs}] train loss: {train_loss:.5f} acc: {train_acc:.5f}')
 
             # 評価
+
             valid_loss_sum, valid_acc_sum = validation(
                 valid_loader, model, loss_fn, device)
 
-            # 評価の状況の記録
             valid_loss = valid_loss_sum * batch_size / len(valid_set)
             valid_acc = valid_acc_sum / len(valid_set)
             mlflow.log_metric('valid_loss', valid_loss, epoch)
@@ -217,7 +221,8 @@ def main() -> None:
             logger.info(
                 f'Epoch [{epoch}/{epochs}] valid loss: {valid_loss:.5f}, acc: {valid_acc:.5f}')
 
-        # ONNX 形式でモデルを保存
+        # モデルを保存
+
         save_model_as_onnx(model)
 
 
