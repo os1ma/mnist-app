@@ -95,7 +95,7 @@ def main() -> None:
             download=True,
             transform=transform
         )
-        test_set = datasets.MNIST(
+        valid_set = datasets.MNIST(
             root=DATA_ROOT,
             train=False,
             download=True,
@@ -110,8 +110,8 @@ def main() -> None:
             batch_size=batch_size,
             shuffle=True
         )
-        test_loader = DataLoader(
-            test_set,
+        valid_loader = DataLoader(
+            valid_set,
             batch_size=batch_size,
             shuffle=False
         )
@@ -173,30 +173,31 @@ def main() -> None:
             train_acc = train_acc_sum / len(train_set)
             mlflow.log_metric('train_loss', train_loss, epoch)
             mlflow.log_metric('train_acc', train_acc.item(), epoch)
+            logger.info(
+                f'Epoch [{epoch}/{epochs}] train loss: {train_loss:.5f} acc: {train_acc:.5f}')
 
             # 予測フェーズ
-            val_acc_sum, val_loss_sum = 0, 0
-            for X, y in test_loader:
+            valid_acc_sum, valid_loss_sum = 0, 0
+            for X, y in valid_loader:
                 X = X.to(device)
                 y = y.to(device)
 
-                outputs_test = net(X)
+                outputs = net(X)
 
-                loss = loss_fn(outputs_test, y)
+                loss = loss_fn(outputs, y)
 
-                predicted_test = torch.max(outputs_test, 1)[1]
+                predicted = torch.max(outputs, 1)[1]
 
-                val_loss_sum += loss.item()
-                val_acc_sum += (predicted_test == y).sum()
+                valid_loss_sum += loss.item()
+                valid_acc_sum += (predicted == y).sum()
 
             # 評価値の算出・記録
-            val_loss = val_loss_sum * batch_size / len(test_set)
-            val_acc = val_acc_sum / len(test_set)
-            mlflow.log_metric('val_loss', val_loss, epoch)
-            mlflow.log_metric('val_acc', val_acc.item(), epoch)
-
+            valid_loss = valid_loss_sum * batch_size / len(valid_set)
+            valid_acc = valid_acc_sum / len(valid_set)
+            mlflow.log_metric('valid_loss', valid_loss, epoch)
+            mlflow.log_metric('valid_acc', valid_acc.item(), epoch)
             logger.info(
-                f'Epoch [{epoch}/{epochs}], loss: {train_loss:.5f} acc: {train_acc:.5f} val_loss: {val_loss:.5f}, val_acc: {val_acc:.5f}')
+                f'Epoch [{epoch}/{epochs}] valid loss: {valid_loss:.5f}, acc: {valid_acc:.5f}')
 
         save_model_as_onnx(net)
 
