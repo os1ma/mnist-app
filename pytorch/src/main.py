@@ -120,7 +120,7 @@ def main() -> None:
 
         net = Net(n_input, n_output, n_hidden).to(device)
         logger.info(f"net = {net}")
-        criterion = nn.CrossEntropyLoss()
+        loss_fn = nn.CrossEntropyLoss()
         optimizer = optim.SGD(net.parameters(), lr=lr)
 
         epochs = 1
@@ -132,17 +132,17 @@ def main() -> None:
             n_train, n_test = 0, 0
 
             # 訓練フェーズ
-            for inputs, labels in tqdm(train_loader):
-                n_train += len(labels)
+            for X, y in tqdm(train_loader):
+                n_train += len(y)
 
-                inputs = inputs.to(device)
-                labels = labels.to(device)
+                X = X.to(device)
+                y = y.to(device)
 
                 optimizer.zero_grad()
 
-                outputs = net(inputs)
+                outputs = net(X)
 
-                loss = criterion(outputs, labels)
+                loss = loss_fn(outputs, y)
                 loss.backward()
 
                 optimizer.step()
@@ -150,23 +150,23 @@ def main() -> None:
                 predicted = torch.max(outputs, 1)[1]
 
                 train_loss += loss.item()
-                train_acc += (predicted == labels).sum()
+                train_acc += (predicted == y).sum()
 
             # 予測フェーズ
-            for inputs_test, labels_test in test_loader:
-                n_test += len(labels_test)
+            for X, y in test_loader:
+                n_test += len(y)
 
-                inputs_test = inputs_test.to(device)
-                labels_test = labels_test.to(device)
+                X = X.to(device)
+                y = y.to(device)
 
-                outputs_test = net(inputs_test)
+                outputs_test = net(X)
 
-                loss_test = criterion(outputs_test, labels_test)
+                loss_test = loss_fn(outputs_test, y)
 
                 predicted_test = torch.max(outputs_test, 1)[1]
 
                 val_loss += loss_test.item()
-                val_acc += (predicted_test == labels_test).sum()
+                val_acc += (predicted_test == y).sum()
 
             # 評価値の算出・記録
             train_acc = train_acc / n_train
