@@ -19,9 +19,7 @@ def predict(resized_image):
     output = onnx_session.run(None, {input_name: input})
 
     # 確率に変換
-    result = softmax(output[0]).tolist()
-
-    return result
+    return softmax(output[0]).tolist()
 
 
 def _preprocess(resized_image):
