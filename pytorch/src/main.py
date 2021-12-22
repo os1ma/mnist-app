@@ -117,7 +117,7 @@ def save_model_as_onnx(net):
     mlflow.log_artifact(MODEL_OUTPUT_FILE)
 
 
-def main() -> None:
+def main():
     with mlflow.start_run():
         mlflow.log_artifact('./src/')
 
@@ -172,7 +172,7 @@ def main() -> None:
 
         n_input = X[0].shape[0]
         n_output = len(set(list(y.data.numpy())))
-        n_hidden = 2
+        n_hidden = 3
         mlflow.log_param('n_input', n_input)
         mlflow.log_param('n_output', n_output)
         mlflow.log_param('n_hidden', n_hidden)
@@ -181,9 +181,9 @@ def main() -> None:
         logger.info(f"model = {model}")
         loss_fn = nn.CrossEntropyLoss()
 
-        lr = 0.01
+        lr = 0.001
         mlflow.log_param('lr', lr)
-        optimizer = optim.SGD(model.parameters(), lr=lr)
+        optimizer = optim.Adam(model.parameters(), lr=lr)
 
         # エポック数だけ学習・評価を繰り返す
 
