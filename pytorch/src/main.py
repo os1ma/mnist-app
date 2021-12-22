@@ -204,7 +204,7 @@ def main() -> None:
             mlflow.log_metric('train_loss', train_loss, epoch)
             mlflow.log_metric('train_acc', train_acc.item(), epoch)
             logger.info(
-                f'Epoch [{epoch}/{epochs}] train loss: {train_loss:.5f} acc: {train_acc:.5f}')
+                f'Epoch [{epoch}/{epochs}] train loss: {train_loss:.5f}, acc: {train_acc:.5f}')
 
             # 評価
 
