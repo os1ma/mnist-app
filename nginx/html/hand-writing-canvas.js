@@ -87,7 +87,7 @@ export function initializeHandWrittingCanvas(selectors) {
     canvas.dragEnd()
   })
   canvasElement.addEventListener('mousemove', (event) => {
-    canvas.draw(event.layerX, event.layerY)
+    canvas.draw(event.offsetX, event.offsetY)
   })
 
   return canvas
