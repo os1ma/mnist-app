@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8" />
+  <title>MNIST で遊んでみよう</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <h1>MNIST で遊んでみよう</h1>
+  <h2>使用中のモデル</h2>
+  <p>タグ：<span id="model-tag"></span></p>
+  <div class="flex-wrapper">
+    <div class="prediction">
+      <h2>推論</h2>
+      <canvas id="draw-area" width="280px" height="280px"></canvas>
+      <button id="submit-button">推論実行</button>
+      <button id="clear-button">書き直す</button>
+    </div>
+    <div>
+      <h2>推論結果</h2>
+      <div class="flex-wrapper">
+        <img id="result-image" />
+        <table>
+          <thead>
+            <tr>
+              <td>数字</td>
+              <td>確率</td>
+            </tr>
+          </thead>
+          <tbody id="result-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
