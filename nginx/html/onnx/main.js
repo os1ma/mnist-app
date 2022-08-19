@@ -10,6 +10,45 @@ document.querySelector('#clear-button').addEventListener('click', () => {
 
 // submit button settings
 
+function normalize(arr) {
+  // FIXME
+  return arr.map((v) => v / 128 - 1)
+}
+
+async function preprocess(blob) {
+  // resize
+
+  const canvas = document.createElement('canvas')
+
+  document.querySelector('body').appendChild(canvas)
+
+  const ctx = canvas.getContext('2d')
+  canvas.height = 28
+  canvas.width = 28
+  ctx.drawImage
+
+  const bitmap = await createImageBitmap(blob, {
+    resizeHeight: 28,
+    resizeHeight: 28
+  })
+  ctx.drawImage(bitmap, 0, 0)
+  const imageData = ctx.getImageData(0, 0, 28, 28)
+
+  // get 28 * 28 elem
+
+  const dst = []
+  for (let i = 0; i < imageData.data.length; i++) {
+    if (i % 4 === 3) {
+      const current = imageData.data[i]
+      dst.push(current)
+    }
+  }
+
+  const normalized = normalize(dst)
+
+  return normalized
+}
+
 function softmax(arr) {
   return arr.map((value) => {
     return Math.exp(value) / arr.map((y) => Math.exp(y)).reduce((a, b) => a + b)
@@ -42,11 +81,9 @@ document.querySelector('#submit-button').addEventListener('click', async () => {
 
   const blob = await canvas.toBlob('image/png')
 
-  // FIXME
-  const input = new Array(784)
-  input.fill(0)
+  const preprocessed = await preprocess(blob)
 
-  const result = await predict(input)
+  const result = await predict(preprocessed)
 
   // 推論結果の画像を表示
 
