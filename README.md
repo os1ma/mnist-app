@@ -61,5 +61,5 @@ docker image ls
 以下のコマンドにより、指定した Docker タグを持つ API をデプロイできます
 
 ```console
-deploy_api RUN_ID=<RUN_ID>
+make deploy_api RUN_ID=<RUN_ID>
 ```
